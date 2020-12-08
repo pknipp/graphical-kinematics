@@ -5,16 +5,14 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 1,
+            logN: 2.0,
             width: 1000,
             mousePressed: false,
             ys: [null],
-            iys: [],
-            dys:[],
-            iymin: Infinity,
-            iymax: -Infinity,
-            dymin: Infinity,
-            dymax: -Infinity,
+            is: [],
+            ds:[],
+            imax: 0,
+            dmax: 0,
         }
         this.height = 500;
         this.int = 0;
@@ -41,71 +39,66 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { iymin, iymax, dymin, dymax, dt } = this.state;
+        let { imax, dmax, dt } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
+
         let ys = id ? [...this.state.ys] : [null];
+        // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(this.state.mousePressed && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - this.height / 2;
-        ys.splice(ys.length - 1, 0, y);
-        let iys = (id < 2) ? [] : [...this.state.iys];
-        let dys = (id < 2) ? [] : [...this.state.dys];
-        let iy;
+        ys.splice(id, 0, y);
+
+        let is = (id < 1) ? [] : [...this.state.is];
+        let iy = (id < 1) ? this.int : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
+        imax = Math.max(imax, iy, -iy);
+        is.push(iy);
+        let ifac = this.height/2/imax;
+
+        let ds = (id < 1) ? [] : [...this.state.ds];
         let dy;
-        if (id === 0) {
-            iy = this.int + ys[0] * dt / 4;
-            iymin = Math.min(iy, iymin);
-            iymax = Math.max(iy, iymax);
-            iys.push(iy);
-        }
         if (id === 1) {
-            iy = this.int + (ys[0] + ys[1]) * dt / 4;
-            iymin = Math.min(iy, iymin);
-            iymax = Math.max(iy, iymax);
-            iys[0] = iy;
-            iy += ys[1] * dt;
-            iymin = Math.min(iy, iymin);
-            iymax = Math.max(iy, iymax);
-            iys.push(iy);
-        }
-        if (id > 0) {
             dy = (ys[id] - ys[id - 1]) / dt;
-            dymin = Math.min(dy, dymin);
-            dymax = Math.max(dy, dymax);
-            dys.push(dy);
+            ds.push(dy, dy);
         }
-        if (id > 1) {
-            iy = iys[id - 1] + ys[id] * dt;
-            iymin = Math.min(iy, iymin);
-            iymax = Math.max(iy, iymax);
-            iys.push(iy);
+        if (id === 2) {
+            dy = (ys[2] - ys[1]) / dt;
+            ds[0] = 3 * (ys[1] - ys[0])/ dt / 2 - dy / 2;
+            ds[1] = dy;
+            dmax = Math.max(dmax, ds[0], -ds[0], ds[1], -ds[1]);
         }
-        let ifac = this.height/2/Math.max(Math.abs(iymin), Math.abs(iymax));
-        let dfac = this.height/2/Math.max(Math.abs(dymin), Math.abs(dymax));
-        this.setState({ ys, iys, dys, iymin, iymax, dymin, dymax, ifac, dfac });
+        if (id > 2) {
+            dy = (ys[id] - ys[id - 2]) / 2 / dt;
+            ds.push(dy);
+            dmax = Math.max(dmax, dy, -dy);
+        }
+        let dfac = this.height/2/dmax;
+
+        this.setState({ ys, is, ds, imax, dmax, ifac, dfac });
     }
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = [...this.state.ys];
+        // Last boolean means that this only works when leaving the last stripe.
         if (!(this.state.mousePressed && id === this.state.n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
-        ys.splice(ys.length - 1, 0, y);
+        ys.splice(id + 1, 0, y);
         this.setState({ ys });
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, height } = this;
-        let {n, ys, iys, dys, width, dt, ifac, dfac} = state;
+        let {n, ys, is, ds, width, dt, ifac, dfac} = state;
         return  !ys ? null : (
             <>
                 <div>
-                    Instructions: Click mouse at a stop to the left of the graph and drag it slowly to the right in order    to create the graph of a function    (in    blue).  The dotted line represents zero.  The    definite integral (assuming zero initial conditions) will appear in    red, and  the   derivative will appear in green.  I use very simple  ("midpoint") formulas
+                    Instructions: Click mouse at a stop to the left of the graph and drag it slowly to the right in order    to create the graph of a function    (in    blue).  The dotted line represents zero.  The    definite integral (assuming zero initial conditions) will appear in    red, and  the   derivative will appear in green.  I use very simple formulas
                     for calculating integral and derivative.
                 </div>
                 <div>
                     Known bugs:
                     <ul>
-                        <li>(Blue) function will stop rendering if resolution is too fine or if dragged too quickly.  (This happens when the mouse misses a virtual stripe in the DOM.)  I can hack a solution for this in various ways.</li>
+                        <li>(Blue) function will stop rendering if resolution is too fine or if dragged too quickly.  (This happens when the mouse misses a virtual stripe in the DOM.)  I can hack a solution for this in various ways (interpolation?).</li>
                         <li>(Obviously) the derivative is rougher than the function itself.  There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>
@@ -117,7 +110,7 @@ class ThreeGraphs extends React.Component {
                         <li>Allow the user to specify whether he/she is drawing the position, the velocity, or the acceleration.  The other two functions would then get generated.</li>
                         <li>I should be able to include one more point at the end of the derivative graph.</li>
                         <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
-                        <li>Get VALUED feedback from colleagues, before wrapping this up!</li>
+                        <li>Get VALUED feedback from colleagues, before taking the next step(s)!</li>
                     </ul>
                 </div>
                 <div>
@@ -161,19 +154,19 @@ class ThreeGraphs extends React.Component {
                                 {!(j < ys.length - 3 && j < n) ? null : <Bar
                                     key={`int${j}`}
                                     j={j}
-                                    offset={Math.round(dt/2)}
+                                    offset={0} //{Math.round(dt/2)}
                                     dt={dt}
-                                    y={Math.round(iys[j] * ifac + this.height / 2)}
-                                    y1={Math.round(iys[j + 1] * ifac + this.height / 2 )}
+                                    y={Math.round(is[j] * ifac + this.height / 2)}
+                                    y1={Math.round(is[j + 1] * ifac + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!(j < ys.length - 3 && j < n - 1) ? null : <Bar
                                     key={`der${j}`}
                                     j={j}
-                                    offset={Math.round(dt/2)}
+                                    offset={0}
                                     dt={dt}
-                                    y={Math.round(dys[j] * dfac + this.height / 2)}
-                                    y1={Math.round(dys[j + 1] * dfac + this.height / 2 )}
+                                    y={Math.round(ds[j] * dfac + this.height / 2)}
+                                    y1={Math.round(ds[j + 1] * dfac + this.height / 2 )}
                                     color={"green"}
                                 />}
                             </>
