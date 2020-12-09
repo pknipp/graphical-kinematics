@@ -42,15 +42,3 @@
   display: flex;
   justify-content: flex-start;
 }
-
-div.IC {
-  display: inline-block;
-  width: 20px;
-  padding: 0;
-}
-
-div.strips-container input {
-  height: 20px;
-  margin: 0;
-  transform: rotate(-90deg);
-}

@@ -1,12 +1,11 @@
 import React from "react";
 import Strip from "./Strip";
 import Bar from "./Bar";
-import IC from "./IC";
 class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 2.0,
+            logN: 0.4,
             width: 300,
             mousePressed: false,
             ys: [null],
@@ -14,10 +13,9 @@ class ThreeGraphs extends React.Component {
             ds:[],
             imax: 0,
             dmax: 0,
-            xi: 0.5,
         }
         this.height = 500;
-        // this.int = 0;
+        this.int = 0;
     }
 
     componentDidMount() {
@@ -35,16 +33,13 @@ class ThreeGraphs extends React.Component {
         this.setState({ logN, n, dt, width });
     }
 
-    handleInput = e => {
-        debugger
-        this.setState({[e.target.name]: Number(e.target.value)});
-    }
+    handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { imax, dmax, dt, xi } = this.state;
+        let { imax, dmax, dt } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
 
         let ys = id ? [...this.state.ys] : [null];
@@ -54,8 +49,7 @@ class ThreeGraphs extends React.Component {
         ys.splice(id, 0, y);
 
         let is = (id < 1) ? [] : [...this.state.is];
-        let iy = (id < 1) ? (xi - 0.5) * this.height : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        console.log(id, iy, xi, this.height);
+        let iy = (id < 1) ? this.int : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         imax = Math.max(imax, iy, -iy);
         is.push(iy);
         let ifac = this.height/2/imax;
@@ -94,17 +88,17 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, height } = this;
-        let {n, ys, is, ds, width, dt, ifac, dfac, xi} = state;
+        let {n, ys, is, ds, width, dt, ifac, dfac} = state;
         return  !ys ? null : (
             <>
                 <div>
-                    Instructions: Click mouse at a stop to the left of the graph and drag it slowly to the right in order    to create the graph of a function    (in    blue).  The dotted line represents zero.  The    definite integral (assuming zero initial conditions) will appear in    red, and  the   derivative will appear in green.  I use very simple formulas
+                    Instructions: Click mouse at a stop to the left of the graph and drag it slowly to the right in order    to create the graph of a function    (in    blue).  The dotted line represents zero.  The    definite integral (assuming zero initial conditions) will appear in    red, and  the   derivative will appear in green.  I use very simple  ("midpoint") formulas
                     for calculating integral and derivative.
                 </div>
                 <div>
                     Known bugs:
                     <ul>
-                        <li>(Blue) function will stop rendering if resolution is too fine or if dragged too quickly.  (This happens when the mouse misses a virtual stripe in the DOM.)  I can hack a solution for this in various ways (interpolation?).</li>
+                        <li>(Blue) function will stop rendering if resolution is too fine or if dragged too quickly.  (This happens when the mouse misses a virtual stripe in the DOM.)  I can hack a solution for this in various ways.</li>
                         <li>(Obviously) the derivative is rougher than the function itself.  There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>
@@ -114,9 +108,9 @@ class ThreeGraphs extends React.Component {
                         <li>Calculate 2nd derivative (ie, position -> acceleration) and "2nd integral" (ie, acceleration -> displacement).</li>
                         <li>At present the integration assumes the initial value to be zero.  I can place 1 or 2 vertical slider(s) next to the graph in order to allow the user to adjust this, both for the "1st integral" and "2nd integral."  For instance this would be like setting the values of the initial position and velocity, if the acceleration is drawn.</li>
                         <li>Allow the user to specify whether he/she is drawing the position, the velocity, or the acceleration.  The other two functions would then get generated.</li>
-                        <li>I should be able to include two more points at the end of the derivative graph and one more at the end of the integral graph.</li>
+                        <li>I should be able to include one more point at the end of the derivative graph.</li>
                         <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
-                        <li>Get VALUED feedback from colleagues, before taking the next step(s)!</li>
+                        <li>Get VALUED feedback from colleagues, before wrapping this up!</li>
                     </ul>
                 </div>
                 <div>
@@ -136,12 +130,6 @@ class ThreeGraphs extends React.Component {
                     <span>fine</span>
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
-                    <IC
-                        quantity={xi}
-                        handleInput={this.handleInput}
-                        height={this.height}
-                        name="xi"
-                    />
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
                         {ys.map((y, j, ys) => (
