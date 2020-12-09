@@ -7,14 +7,14 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 1000,
+            width: 300,
             mousePressed: false,
             ys: [null],
             is: [],
             ds:[],
             imax: 0,
             dmax: 0,
-            xi: 0.5,
+            xi: 0.0,
         }
         this.height = 500;
         this.int = 0;
@@ -36,7 +36,6 @@ class ThreeGraphs extends React.Component {
     }
 
     handleInput = e => {
-        debugger
         this.setState({[e.target.name]: Number(e.target.value)});
     }
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
@@ -54,9 +53,7 @@ class ThreeGraphs extends React.Component {
         ys.splice(id, 0, y);
 
         let is = (id < 1) ? [] : [...this.state.is];
-        let iy = (id < 1) ? this.int
-        // (0.5 - xi) * this.height * width
-        : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
+        let iy = (id < 1) ? - xi * this.height * width / 2 : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         console.log(id, iy, xi, this.height);
         imax = Math.max(imax, iy, -iy);
         is.push(iy);
@@ -86,12 +83,18 @@ class ThreeGraphs extends React.Component {
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
+        let { imax, dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
+        let is = [...this.state.is];
         // Last boolean means that this only works when leaving the last stripe.
-        if (!(this.state.mousePressed && id === this.state.n - 1 && id === ys.length - 2)) return
+        if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id + 1, 0, y);
-        this.setState({ ys });
+        let iy = is[id] + (ys[id] + ys[id + 1]) * dt / 2;
+        imax = Math.max(imax, iy, -iy);
+        is.push(iy);
+        let ifac = this.height/2/imax;
+        this.setState({ ys, is, ifac });
     }
 
     render() {
@@ -116,7 +119,7 @@ class ThreeGraphs extends React.Component {
                         <li>Calculate 2nd derivative (ie, position -> acceleration) and "2nd integral" (ie, acceleration -> displacement).</li>
                         <li>At present the integration assumes the initial value to be zero.  I can place 1 or 2 vertical slider(s) next to the graph in order to allow the user to adjust this, both for the "1st integral" and "2nd integral."  For instance this would be like setting the values of the initial position and velocity, if the acceleration is drawn.</li>
                         <li>Allow the user to specify whether he/she is drawing the position, the velocity, or the acceleration.  The other two functions would then get generated.</li>
-                        <li>I should be able to include two more points at the end of the derivative graph and one more at the end of the integral graph.</li>
+                        <li>I should be able to include two more points at the end of the derivative graph.</li>
                         <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
                         <li>Get VALUED feedback from colleagues, before taking the next step(s)!</li>
                     </ul>
@@ -166,7 +169,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(ys[j + 1] + this.height / 2 )}
                                     color={"blue"}
                                 />}
-                                {!(j < ys.length - 3 && j < n) ? null : <Bar
+                                {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`int${j}`}
                                     j={j}
                                     offset={0} //{Math.round(dt/2)}
