@@ -7,7 +7,7 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 300,
+            width: 1000,
             mousePressed: false,
             ys: [null],
             is: [],
