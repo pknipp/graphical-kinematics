@@ -54,3 +54,7 @@ div.strips-container input {
   margin: 0;
   transform: rotate(-90deg);
 }
+
+.spacer {
+  width: 10px;
+}

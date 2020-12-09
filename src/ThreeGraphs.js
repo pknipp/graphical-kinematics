@@ -7,7 +7,7 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 300,
+            width: 1000,
             mousePressed: false,
             ys: [null],
             is: [],
@@ -17,7 +17,7 @@ class ThreeGraphs extends React.Component {
             xi: 0.5,
         }
         this.height = 500;
-        // this.int = 0;
+        this.int = 0;
     }
 
     componentDidMount() {
@@ -44,7 +44,7 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { imax, dmax, dt, xi } = this.state;
+        let { imax, dmax, dt, xi, width } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
 
         let ys = id ? [...this.state.ys] : [null];
@@ -54,7 +54,9 @@ class ThreeGraphs extends React.Component {
         ys.splice(id, 0, y);
 
         let is = (id < 1) ? [] : [...this.state.is];
-        let iy = (id < 1) ? (xi - 0.5) * this.height : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
+        let iy = (id < 1) ? this.int
+        // (0.5 - xi) * this.height * width
+        : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         console.log(id, iy, xi, this.height);
         imax = Math.max(imax, iy, -iy);
         is.push(iy);
@@ -142,6 +144,7 @@ class ThreeGraphs extends React.Component {
                         height={this.height}
                         name="xi"
                     />
+                    <div className="spacer" style={{height: `${height}px`}}></div>
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
                         {ys.map((y, j, ys) => (
