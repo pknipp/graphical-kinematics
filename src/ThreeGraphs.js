@@ -83,9 +83,10 @@ class ThreeGraphs extends React.Component {
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { imax, dt, mousePressed, n } = this.state;
+        let { imax, dmax, dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
         let is = [...this.state.is];
+        let ds = [...this.state.ds];
         // Last boolean means that this only works when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
@@ -94,7 +95,13 @@ class ThreeGraphs extends React.Component {
         imax = Math.max(imax, iy, -iy);
         is.push(iy);
         let ifac = this.height/2/imax;
-        this.setState({ ys, is, ifac });
+        let dy = (ys[id + 1] - ys[id - 1]) / 2 / dt;
+        ds.push(dy);
+
+        ds.push(2 * (ys[id + 1] - ys[id])/ dt - dy);
+        dmax = Math.max(dmax, Math.abs(dy), Math.abs(ds[id + 1]));
+        let dfac = this.height/2/dmax;
+        this.setState({ ys, is, ds, ifac, dfac });
     }
 
     render() {
@@ -119,7 +126,6 @@ class ThreeGraphs extends React.Component {
                         <li>Calculate 2nd derivative (ie, position -> acceleration) and "2nd integral" (ie, acceleration -> displacement).</li>
                         <li>At present the integration assumes the initial value to be zero.  I can place 1 or 2 vertical slider(s) next to the graph in order to allow the user to adjust this, both for the "1st integral" and "2nd integral."  For instance this would be like setting the values of the initial position and velocity, if the acceleration is drawn.</li>
                         <li>Allow the user to specify whether he/she is drawing the position, the velocity, or the acceleration.  The other two functions would then get generated.</li>
-                        <li>I should be able to include two more points at the end of the derivative graph.</li>
                         <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
                         <li>Get VALUED feedback from colleagues, before taking the next step(s)!</li>
                     </ul>
@@ -132,7 +138,7 @@ class ThreeGraphs extends React.Component {
                             type="range"
                             onChange={this.handleLogN}
                             name="logN"
-                            min="0.25"
+                            min="0.5"
                             max="3"
                             step="0.25"
                             value={this.state.logN}
@@ -178,7 +184,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(is[j + 1] * ifac + this.height / 2 )}
                                     color={"red"}
                                 />}
-                                {!(j < ys.length - 3 && j < n - 1) ? null : <Bar
+                                {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`der${j}`}
                                     j={j}
                                     offset={0}
