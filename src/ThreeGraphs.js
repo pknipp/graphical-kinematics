@@ -1,13 +1,13 @@
 import React from "react";
 import Strip from "./Strip";
 import Bar from "./Bar";
-import IC from "./IC";
+// import IC from "./IC";
 class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 300,
+            width: 1000,
             mousePressed: false,
             ys: [null],
             is: [],
@@ -17,7 +17,7 @@ class ThreeGraphs extends React.Component {
             xi: 0.0,
         }
         this.height = 500;
-        this.int = 0;
+        this.xiMax = 0.3;
     }
 
     componentDidMount() {
@@ -45,16 +45,18 @@ class ThreeGraphs extends React.Component {
     handleEnter = e => {
         let { imax, dmax, dt, xi, width } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-
         let ys = id ? [...this.state.ys] : [null];
+        // following two lines are needed if previous run shutdown improperly, I think
+        imax = (!id) ? 0 : imax;
+        dmax = (!id) ? 0 : dmax;
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(this.state.mousePressed && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id, 0, y);
 
         let is = (id < 1) ? [] : [...this.state.is];
-        let iy = (id < 1) ? - xi * this.height * width / 2 : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        console.log(id, iy, xi, this.height);
+        let myXi = (xi > 0) ? this.xiMax: (xi < 0) ? -this.xiMax : 0;
+        let iy = (id < 1) ? - myXi * this.height * width / 2 : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         imax = Math.max(imax, iy, -iy);
         is.push(iy);
         let ifac = this.height/2/imax;
@@ -77,7 +79,7 @@ class ThreeGraphs extends React.Component {
             dmax = Math.max(dmax, dy, -dy);
         }
         let dfac = this.height/2/dmax;
-
+        // console.log(id, imax, ifac);
         this.setState({ ys, is, ds, imax, dmax, ifac, dfac });
     }
 
@@ -105,55 +107,73 @@ class ThreeGraphs extends React.Component {
     }
 
     render() {
-        let { state, handleDown, handleUp, handleEnter, handleLeave, height } = this;
-        let {n, ys, is, ds, width, dt, ifac, dfac, xi} = state;
+        let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
+        let {n, ys, is, ds, width, dt, xi, ifac, dfac, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
-                    Instructions: Click mouse at a stop to the left of the graph and drag it slowly to the right in order    to create the graph of a function    (in    blue).  The dotted line represents zero.  The    definite integral (assuming zero initial conditions) will appear in    red, and  the   derivative will appear in green.  I use very simple formulas
+                    <b>Instructions:</b> Click mouse at a spot to the left of the rectangle and drag slowly to the right in order to create the graph of a function (blue).  The dotted line represents zero.  The indefinite integral (for user-controlled "initial conditions" which are either positive, negative, or zero) will appear as red, and  the derivative will be green.  I use simple formulas
                     for calculating integral and derivative.
                 </div>
                 <div>
-                    Known bugs:
+                    <b>Bugs</b> (which are known):
                     <ul>
-                        <li>(Blue) function will stop rendering if resolution is too fine or if dragged too quickly.  (This happens when the mouse misses a virtual stripe in the DOM.)  I can hack a solution for this in various ways (interpolation?).</li>
+                        <li>If resolution is too fine or if dragged too quickly, app ceases because the mouse misses a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
                         <li>(Obviously) the derivative is rougher than the function itself.  There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>
                 <div>
-                    To-do list (other than those items mentionned above):
+                    <b>To-do</b> list (other than those items mentionned above):
                     <ul>
-                        <li>Calculate 2nd derivative (ie, position -> acceleration) and "2nd integral" (ie, acceleration -> displacement).</li>
-                        <li>At present the integration assumes the initial value to be zero.  I can place 1 or 2 vertical slider(s) next to the graph in order to allow the user to adjust this, both for the "1st integral" and "2nd integral."  For instance this would be like setting the values of the initial position and velocity, if the acceleration is drawn.</li>
-                        <li>Allow the user to specify whether he/she is drawing the position, the velocity, or the acceleration.  The other two functions would then get generated.</li>
+                        <li>Make the "language" of this specific to kinematics, ie for independent variable being the time <i>t</i> and dependent variables being the position <i>x</i>, velocity <i>v</i>, and acceleration <i>a</i>.</li>
+                        <li>Allow the user to specify whether he/she is drawing <i>x</i>, <i>v</i>, or <i>a</i>.  The other two functions would then get generated automatically.</li>
                         <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
-                        <li>Get VALUED feedback from colleagues, before taking the next step(s)!</li>
                     </ul>
                 </div>
-                <div>
-                    <div>Spatial resolution: </div>
-                    <span>coarse</span>
-                    <span>
-                        <input
-                            type="range"
-                            onChange={this.handleLogN}
-                            name="logN"
-                            min="0.5"
-                            max="3"
-                            step="0.25"
-                            value={this.state.logN}
-                        />
-                    </span>
-                    <span>fine</span>
+                <div className="sliders">
+                    <div>
+                        <div>Spatial resolution: </div>
+                        <span>coarse</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleLogN}
+                                name="logN"
+                                min="0.5"
+                                max="3"
+                                step="0.25"
+                                value={logN}
+                            />
+                        </span>
+                        <span>fine</span>
+                    </div>
+                    <div>
+                        <div>Integral's initial value (-, 0, or +): </div>
+                        <span>negative</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleInput}
+                                name="xi"
+                                min="-0.5"
+                                max="0.5"
+                                step="0.5"
+                                value={xi}
+                            />
+                        </span>
+                        <span>positive</span>
+                    </div>
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
-                    <IC
+
+                    {/* <IC
                         quantity={xi}
                         handleInput={this.handleInput}
                         height={this.height}
                         name="xi"
                     />
-                    <div className="spacer" style={{height: `${height}px`}}></div>
+                    <div className="spacer" style={{height: `${height}px`}}></div> */}
+
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
                         {ys.map((y, j, ys) => (
