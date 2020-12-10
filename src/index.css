@@ -55,6 +55,15 @@ div.strips-container input {
   transform: rotate(-90deg);
 }
 
-.spacer {
+/* .spacer {
   width: 10px;
+} */
+
+.sliders {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.sliders>* {
+  padding: 0 20px;
 }
