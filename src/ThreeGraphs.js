@@ -12,8 +12,8 @@ class ThreeGraphs extends React.Component {
             ys: [null],
             is: [],
             ds:[],
-            imax: 0,
-            dmax: 0,
+            imax: 1,
+            dmax: 1,
             xi: 0.0,
         }
         this.height = 500;
@@ -54,8 +54,10 @@ class ThreeGraphs extends React.Component {
 
         let is = (id < 1) ? [] : [...this.state.is];
         let iy = (id < 1) ? - xi * this.height * width / 2 : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        console.log(id, iy, xi, this.height);
+        // console.log(id, iy, xi, this.height);
+        let xiNew = xi * imax;
         imax = Math.max(imax, iy, -iy);
+        xiNew /= imax;
         is.push(iy);
         let ifac = this.height/2/imax;
 
@@ -78,7 +80,7 @@ class ThreeGraphs extends React.Component {
         }
         let dfac = this.height/2/dmax;
 
-        this.setState({ ys, is, ds, imax, dmax, ifac, dfac });
+        this.setState({ ys, is, ds, imax, dmax, ifac, dfac, xi: xiNew });
     }
 
     handleLeave = e => {
