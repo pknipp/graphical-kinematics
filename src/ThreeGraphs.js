@@ -59,6 +59,7 @@ class ThreeGraphs extends React.Component {
         let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         i1s.splice(id, 0, i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
+        // let newIs = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], i1i);
 
         let d1s = (id < 1) ? [0] : [...this.state.d1s];
         let d1y;
@@ -103,13 +104,15 @@ class ThreeGraphs extends React.Component {
         this.setState({ ys, i1s, d1s });
     }
 
-    getInt = id => {
-        let { ys, dt, i1i, width } = this.state;
-        let i1s = (id < 1) ? [] : [...this.state.i1s];
-        let myI1i = (i1i > 0) ? this.i1iMax: (i1i < 0) ? -this.i1iMax : 0;
-        let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
-        i1s.push(i1y);
+    getInt = (id, fs, is, ii) => {
+        let { dt, width } = this.state;
+        let newIs = (id === 0) ? [0] : [...is];
+        //this is presently hardcoded for first integral
+        let myIi = (ii > 0) ? this.i1iMax: (ii < 0) ? -this.i1iMax : 0;
+        let iy = (id < 1) ? - myIi * this.height * width / 2 : newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
+        newIs.splice(id, 0, iy);
+        newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
+        return newIs;
     }
 
     render() {
