@@ -10,14 +10,21 @@ class ThreeGraphs extends React.Component {
             width: 1000,
             mousePressed: false,
             ys: [null],
-            is: [],
-            ds:[],
-            imax: 0,
-            dmax: 0,
-            xi: 0.0,
+            i1s: [0],
+            d1s:[0],
+            i2s: [0],
+            d2s: [0],
+            i1max: 0,
+            i2max: 0,
+            d1max: 0,
+            d2max: 0,
+            i1i: 0.0,
+            i2i: 0.0,
+            xva: 1,
         }
         this.height = 500;
-        this.xiMax = 0.3;
+        this.i1iMax = 0.3;
+        this.i2iMax = 0.3;
     }
 
     componentDidMount() {
@@ -43,72 +50,82 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { imax, dmax, dt, xi, width } = this.state;
+        let { i1max, d1max, dt, i1i, width } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
         // following two lines are needed if previous run shutdown improperly, I think
-        imax = (!id) ? 0 : imax;
-        dmax = (!id) ? 0 : dmax;
+        i1max = (!id) ? 0 : i1max;
+        d1max = (!id) ? 0 : d1max;
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(this.state.mousePressed && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id, 0, y);
 
-        let is = (id < 1) ? [] : [...this.state.is];
-        let myXi = (xi > 0) ? this.xiMax: (xi < 0) ? -this.xiMax : 0;
-        let iy = (id < 1) ? - myXi * this.height * width / 2 : is[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        imax = Math.max(imax, iy, -iy);
-        is.push(iy);
-        let ifac = this.height/2/imax;
+        let i1s = (id < 1) ? [] : [...this.state.i1s];
+        let myI1i = (i1i > 0) ? this.i1iMax: (i1i < 0) ? -this.i1iMax : 0;
+        let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
+        i1max = Math.max(i1max, i1y, -i1y);
+        i1s.push(i1y);
+        let i1fac = this.height/2/i1max;
 
-        let ds = (id < 1) ? [] : [...this.state.ds];
-        let dy;
+        let d1s = (id < 1) ? [] : [...this.state.d1s];
+        let d1y;
         if (id === 1) {
-            dy = (ys[id] - ys[id - 1]) / dt;
-            ds.push(dy, dy);
+            d1y = (ys[id] - ys[id - 1]) / dt;
+            d1s.push(d1y, d1y);
         }
         if (id === 2) {
-            dy = (ys[2] - ys[1]) / dt;
-            ds[0] = 3 * (ys[1] - ys[0])/ dt / 2 - dy / 2;
-            ds[1] = dy;
-            dmax = Math.max(dmax, ds[0], -ds[0], ds[1], -ds[1]);
+            d1y = (ys[2] - ys[1]) / dt;
+            d1s[0] = 3 * (ys[1] - ys[0])/ dt / 2 - d1y / 2;
+            d1s[1] = d1y;
+            d1max = Math.max(d1max, d1s[0], -d1s[0], d1s[1], -d1s[1]);
         }
         if (id > 2) {
-            dy = (ys[id] - ys[id - 2]) / 2 / dt;
-            ds.push(dy);
-            dmax = Math.max(dmax, dy, -dy);
+            d1y = (ys[id] - ys[id - 2]) / 2 / dt;
+            d1s.push(d1y);
+            d1max = Math.max(d1max, d1y, -d1y);
         }
-        let dfac = this.height/2/dmax;
+        let d1fac = this.height/2/d1max;
         // console.log(id, imax, ifac);
-        this.setState({ ys, is, ds, imax, dmax, ifac, dfac });
+        this.setState({ ys, i1s, d1s, i1max, d1max, i1fac, d1fac });
     }
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { imax, dmax, dt, mousePressed, n } = this.state;
+        let { i1max, d1max, dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
-        let is = [...this.state.is];
-        let ds = [...this.state.ds];
+        let i1s = [...this.state.i1s];
+        let d1s = [...this.state.d1s];
         // Last boolean means that this only works when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id + 1, 0, y);
-        let iy = is[id] + (ys[id] + ys[id + 1]) * dt / 2;
-        imax = Math.max(imax, iy, -iy);
-        is.push(iy);
-        let ifac = this.height/2/imax;
-        let dy = (ys[id + 1] - ys[id - 1]) / 2 / dt;
-        ds.push(dy);
+        let i1y = i1s[id] + (ys[id] + ys[id + 1]) * dt / 2;
+        i1max = Math.max(i1max, i1y, -i1y);
+        i1s.push(i1y);
+        let i1fac = this.height/2/i1max;
+        let d1y = (ys[id + 1] - ys[id - 1]) / 2 / dt;
+        d1s.push(d1y);
 
-        ds.push(2 * (ys[id + 1] - ys[id])/ dt - dy);
-        dmax = Math.max(dmax, Math.abs(dy), Math.abs(ds[id + 1]));
-        let dfac = this.height/2/dmax;
-        this.setState({ ys, is, ds, ifac, dfac });
+        d1s.push(2 * (ys[id + 1] - ys[id])/ dt - d1y);
+        d1max = Math.max(d1max, Math.abs(d1y), Math.abs(d1s[id + 1]));
+        let d1fac = this.height/2/d1max;
+        this.setState({ ys, i1s, d1s, i1fac, d1fac });
+    }
+
+    getInt = id => {
+        let { ys, i1max, dt, i1i, width } = this.state;
+        let i1s = (id < 1) ? [] : [...this.state.i1s];
+        let myI1i = (i1i > 0) ? this.i1iMax: (i1i < 0) ? -this.i1iMax : 0;
+        let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
+        i1max = Math.max(i1max, i1y, -i1y);
+        i1s.push(i1y);
+        let i1fac = this.height/2/i1max;
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, is, ds, width, dt, xi, ifac, dfac, logN} = state;
+        let {n, ys, i1s, d1s, width, dt, i1i, i1fac, d1fac, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -154,25 +171,17 @@ class ThreeGraphs extends React.Component {
                             <input
                                 type="range"
                                 onChange={handleInput}
-                                name="xi"
+                                name="i1i"
                                 min="-0.5"
                                 max="0.5"
                                 step="0.5"
-                                value={xi}
+                                value={i1i}
                             />
                         </span>
                         <span>positive</span>
                     </div>
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
-
-                    {/* <IC
-                        quantity={xi}
-                        handleInput={this.handleInput}
-                        height={this.height}
-                        name="xi"
-                    />
-                    <div className="spacer" style={{height: `${height}px`}}></div> */}
 
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
@@ -200,8 +209,8 @@ class ThreeGraphs extends React.Component {
                                     j={j}
                                     offset={0} //{Math.round(dt/2)}
                                     dt={dt}
-                                    y={Math.round(is[j] * ifac + this.height / 2)}
-                                    y1={Math.round(is[j + 1] * ifac + this.height / 2 )}
+                                    y={Math.round(i1s[j] * i1fac + this.height / 2)}
+                                    y1={Math.round(i1s[j + 1] * i1fac + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
@@ -209,8 +218,8 @@ class ThreeGraphs extends React.Component {
                                     j={j}
                                     offset={0}
                                     dt={dt}
-                                    y={Math.round(ds[j] * dfac + this.height / 2)}
-                                    y1={Math.round(ds[j + 1] * dfac + this.height / 2 )}
+                                    y={Math.round(d1s[j] * d1fac + this.height / 2)}
+                                    y1={Math.round(d1s[j + 1] * d1fac + this.height / 2 )}
                                     color={"green"}
                                 />}
                             </>
