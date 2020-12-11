@@ -6,15 +6,14 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 0.5,
-            width: 400,
+            logN: 2.0,
+            width: 1000,
             mousePressed: false,
             ys: [null],
             i1s: [0],
             d1s:[0],
             i2s: [0],
             d2s: [0],
-            d2max: 0,
             i1i: 0.0,
             i2i: 0.0,
             xva: 1,
@@ -36,7 +35,6 @@ class ThreeGraphs extends React.Component {
         let n = Math.round(10 ** logN);
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
-        debugger
         this.setState({ logN, n, dt, width });
     }
 
@@ -204,13 +202,22 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
-                                {!(j < ys.length - 3 || (ys.length === n + 2 && j === n)) ? null : <Bar
+                                {!((j < ys.length - 3) && j < n) ? null : <Bar
                                     key={`der${j}`}
                                     j={j}
                                     offset={0}
                                     dt={dt}
                                     y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d1s[j - 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
+                                    y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
+                                    color={"green"}
+                                />}
+                                {(j !== n - 1) ? null : <Bar
+                                    key={`der${j}`}
+                                    j={j}
+                                    offset={0}
+                                    dt={dt}
+                                    y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
+                                    y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
                                     color={"green"}
                                 />}
                             </>
