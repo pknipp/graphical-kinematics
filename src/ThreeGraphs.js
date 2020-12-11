@@ -46,7 +46,7 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { dt, i1i, width } = this.state;
+        let { dt, i1i } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
         // failing boolean means either that stripe was missed or mouse un-clicked
@@ -54,12 +54,7 @@ class ThreeGraphs extends React.Component {
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id, 0, y);
 
-        let i1s = (id === 0) ? [0] : [...this.state.i1s];
-        let myI1i = (i1i > 0) ? this.i1iMax: (i1i < 0) ? -this.i1iMax : 0;
-        let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        i1s.splice(id, 0, i1y);
-        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
-        // let newIs = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], i1i);
+        let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], i1i);
 
         let d1s = (id < 1) ? [0] : [...this.state.d1s];
         let d1y;
@@ -88,12 +83,9 @@ class ThreeGraphs extends React.Component {
         // Last boolean means that this only works when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
-        ys.splice(id + 1, 0, y);
+        ys.splice(n, 0, y);
 
-        let i1s = [...this.state.i1s];
-        let i1y = i1s[id] + (ys[id] + ys[id + 1]) * dt / 2;
-        i1s.splice(id + 1, 0, i1y);
-        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y)
+        let i1s = this.getInt(n, ys, [...this.state.i1s]);
 
         let d1s = [...this.state.d1s];
         let d1y = (ys[n] - ys[n - 2]) / 2 / dt;
@@ -110,7 +102,9 @@ class ThreeGraphs extends React.Component {
         //this is presently hardcoded for first integral
         let myIi = (ii > 0) ? this.i1iMax: (ii < 0) ? -this.i1iMax : 0;
         let iy = (id < 1) ? - myIi * this.height * width / 2 : newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
+                                                  // let i1y = i1s[id] + (ys[id] + ys[id + 1]) * dt / 2;
         newIs.splice(id, 0, iy);
+        //i1s.splice(id + 1, 0, i1y);
         newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
         return newIs;
     }
