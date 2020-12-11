@@ -6,7 +6,7 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 2.0,
+            logN: 0.5,
             width: 400,
             mousePressed: false,
             ys: [null],
@@ -36,6 +36,7 @@ class ThreeGraphs extends React.Component {
         let n = Math.round(10 ** logN);
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
+        debugger
         this.setState({ logN, n, dt, width });
     }
 
@@ -68,8 +69,8 @@ class ThreeGraphs extends React.Component {
             d1s = [d1y, d1y, Math.abs(d1y)];
         }
         if (id === 2) {
-            d1y = (ys[2] - ys[1]) / dt;
-            d1s[0] = 3 * (ys[1] - ys[0])/ dt / 2 - d1y / 2;
+            d1y = (ys[2] - ys[0]) / 2 / dt;
+            d1s[0] = 2 * (ys[1] - ys[0])/ dt - d1y;
             d1s[1] = d1y;
             d1s[2] = Math.max(Math.abs(d1s[0]), Math.abs(d1s[1]));
         }
@@ -85,24 +86,23 @@ class ThreeGraphs extends React.Component {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let { d1max, dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
-        let i1s = [...this.state.i1s];
-        let d1s = [...this.state.d1s];
         // Last boolean means that this only works when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id + 1, 0, y);
+
+        let i1s = [...this.state.i1s];
         let i1y = i1s[id] + (ys[id] + ys[id + 1]) * dt / 2;
-        // i1s.push(i1y);
         i1s.splice(id + 1, 0, i1y);
-        // i1max = Math.max(i1max, i1y, -i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y)
 
-        let d1y = (ys[n] - ys[2 - 2]) / 2 / dt;
+        let d1s = [...this.state.d1s];
+        let d1y = (ys[n] - ys[n - 2]) / 2 / dt;
         d1s.splice(n - 1, 0, d1y);
-
         d1s.splice(n, 0, 2 * (ys[n] - ys[n - 1])/ dt - d1y);
         d1s[n + 1] = Math.max(d1s[n + 1], Math.abs(d1y), Math.abs(d1s[n]));
         let d1fac = this.height/2/d1max;
+
         this.setState({ ys, i1s, d1s, d1fac });
     }
 
