@@ -46,7 +46,7 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { dt, i1i } = this.state;
+        let { dt, i1i, i2i } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
         // failing boolean means either that stripe was missed or mouse un-clicked
@@ -55,6 +55,7 @@ class ThreeGraphs extends React.Component {
         ys.splice(id, 0, y);
 
         let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], i1i);
+        let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], i2i);
 
         let d1s = (id < 1) ? [0] : [...this.state.d1s];
         let d1y;
@@ -73,7 +74,7 @@ class ThreeGraphs extends React.Component {
             d1s.splice(id - 1, 0, d1y);
             d1s[d1s.length - 1] = Math.max(d1s[d1s.length - 1], d1y, -d1y);
         }
-        this.setState({ ys, i1s, d1s });
+        this.setState({ ys, i1s, d1s, i2s });
     }
 
     handleLeave = e => {
@@ -86,6 +87,7 @@ class ThreeGraphs extends React.Component {
         ys.splice(n, 0, y);
 
         let i1s = this.getInt(n, ys, [...this.state.i1s]);
+        let i2s = this.getInt(n, i1s,[...this.state.i2s]);
 
         let d1s = [...this.state.d1s];
         let d1y = (ys[n] - ys[n - 2]) / 2 / dt;
@@ -93,25 +95,24 @@ class ThreeGraphs extends React.Component {
         d1s.splice(n, 0, 2 * (ys[n] - ys[n - 1])/ dt - d1y);
         d1s[n + 1] = Math.max(d1s[n + 1], Math.abs(d1y), Math.abs(d1s[n]));
 
-        this.setState({ ys, i1s, d1s });
+        this.setState({ ys, i1s, d1s, i2s });
     }
 
     getInt = (id, fs, is, ii) => {
         let { dt, width } = this.state;
         let newIs = (id === 0) ? [0] : [...is];
-        //this is presently hardcoded for first integral
+        //this is presently hardcoded for first integral.
+        // Perhaps make it a single non-state instance variable (rather than two)?
         let myIi = (ii > 0) ? this.i1iMax: (ii < 0) ? -this.i1iMax : 0;
         let iy = (id < 1) ? - myIi * this.height * width / 2 : newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
-                                                  // let i1y = i1s[id] + (ys[id] + ys[id + 1]) * dt / 2;
         newIs.splice(id, 0, iy);
-        //i1s.splice(id + 1, 0, i1y);
         newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
         return newIs;
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, width, dt, i1i, logN} = state;
+        let {n, ys, i1s, i2s, d1s, width, dt, i1i, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -195,8 +196,8 @@ class ThreeGraphs extends React.Component {
                                     j={j}
                                     offset={0} //{Math.round(dt/2)}
                                     dt={dt}
-                                    y={Math.round(i1s[j] * this.height/2/i1s[i1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
+                                    y={Math.round(i2s[j] * this.height/2/i2s[i2s.length - 1] + this.height / 2)}
+                                    y1={Math.round(i2s[j + 1] * this.height/2/i2s[i2s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!((j < ys.length - 3) && j < n) ? null : <Bar
