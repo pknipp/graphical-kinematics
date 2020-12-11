@@ -14,7 +14,6 @@ class ThreeGraphs extends React.Component {
             d1s:[0],
             i2s: [0],
             d2s: [0],
-            i1max: 0,
             i2max: 0,
             d1max: 0,
             d2max: 0,
@@ -50,11 +49,10 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { i1max, d1max, dt, i1i, width } = this.state;
+        let { d1max, dt, i1i, width } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
-        // following two lines are needed if previous run shutdown improperly, I think
-        i1max = (!id) ? 0 : i1max;
+        // following line is needed if previous run shutdown improperly, I think
         d1max = (!id) ? 0 : d1max;
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(this.state.mousePressed && id === ys.length - 1)) return;
@@ -94,7 +92,7 @@ class ThreeGraphs extends React.Component {
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { i1max, d1max, dt, mousePressed, n } = this.state;
+        let { d1max, dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
         let i1s = [...this.state.i1s];
         let d1s = [...this.state.d1s];
@@ -106,7 +104,7 @@ class ThreeGraphs extends React.Component {
         // i1s.push(i1y);
         i1s.splice(id + 1, 0, i1y);
         // i1max = Math.max(i1max, i1y, -i1y);
-        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], iy1, -iy1)
+        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y)
         let i1fac = this.height/2/i1s[i1s.length - 1];
 
         let d1y = (ys[id + 1] - ys[id - 1]) / 2 / dt;
