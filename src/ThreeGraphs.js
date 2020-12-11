@@ -84,7 +84,7 @@ class ThreeGraphs extends React.Component {
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { d1max, dt, mousePressed, n } = this.state;
+        let { dt, mousePressed, n } = this.state;
         let ys = [...this.state.ys];
         // Last boolean means that this only works when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
@@ -101,9 +101,8 @@ class ThreeGraphs extends React.Component {
         d1s.splice(n - 1, 0, d1y);
         d1s.splice(n, 0, 2 * (ys[n] - ys[n - 1])/ dt - d1y);
         d1s[n + 1] = Math.max(d1s[n + 1], Math.abs(d1y), Math.abs(d1s[n]));
-        let d1fac = this.height/2/d1max;
 
-        this.setState({ ys, i1s, d1s, d1fac });
+        this.setState({ ys, i1s, d1s });
     }
 
     getInt = id => {
@@ -205,13 +204,13 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
-                                {!(j < ys.length - 3 || (ys.length === n + 1 && j === n)) ? null : <Bar
+                                {!(j < ys.length - 3 || (ys.length === n + 2 && j === n)) ? null : <Bar
                                     key={`der${j}`}
                                     j={j}
                                     offset={0}
                                     dt={dt}
                                     y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d1s[j +1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
+                                    y1={Math.round(d1s[j - 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
                                     color={"green"}
                                 />}
                             </>
