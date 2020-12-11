@@ -112,7 +112,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, i2s, d1s, width, dt, i1i, logN} = state;
+        let {n, ys, i1s, i2s, d1s, width, dt, i1i, i2i, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -152,7 +152,7 @@ class ThreeGraphs extends React.Component {
                         <span>fine</span>
                     </div>
                     <div>
-                        <div>Integral's initial value (-, 0, or +): </div>
+                        <div>1st integral's initial value (-, 0, or +): </div>
                         <span>negative</span>
                         <span>
                             <input
@@ -163,6 +163,22 @@ class ThreeGraphs extends React.Component {
                                 max="0.5"
                                 step="0.5"
                                 value={i1i}
+                            />
+                        </span>
+                        <span>positive</span>
+                    </div>
+                    <div>
+                        <div>2nd integral's initial value (-, 0, or +): </div>
+                        <span>negative</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleInput}
+                                name="i2i"
+                                min="-0.5"
+                                max="0.5"
+                                step="0.5"
+                                value={i2i}
                             />
                         </span>
                         <span>positive</span>
@@ -196,8 +212,8 @@ class ThreeGraphs extends React.Component {
                                     j={j}
                                     offset={0} //{Math.round(dt/2)}
                                     dt={dt}
-                                    y={Math.round(i2s[j] * this.height/2/i2s[i2s.length - 1] + this.height / 2)}
-                                    y1={Math.round(i2s[j + 1] * this.height/2/i2s[i2s.length - 1] + this.height / 2 )}
+                                    y={Math.round(i1s[j] * this.height/2/i1s[i1s.length - 1] + this.height / 2)}
+                                    y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!((j < ys.length - 3) && j < n) ? null : <Bar
