@@ -7,14 +7,13 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 1000,
+            width: 400,
             mousePressed: false,
             ys: [null],
             i1s: [0],
             d1s:[0],
             i2s: [0],
             d2s: [0],
-            d1max: 0,
             d2max: 0,
             i1i: 0.0,
             i2i: 0.0,
@@ -48,11 +47,9 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { d1max, dt, i1i, width } = this.state;
+        let { dt, i1i, width } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
-        // following line is needed if previous run shutdown improperly, I think
-        d1max = (!id) ? 0 : d1max;
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(this.state.mousePressed && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - this.height / 2;
@@ -64,26 +61,24 @@ class ThreeGraphs extends React.Component {
         i1s.splice(id, 0, i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
 
-        let d1s = (id < 1) ? [] : [...this.state.d1s];
+        let d1s = (id < 1) ? [0] : [...this.state.d1s];
         let d1y;
         if (id === 1) {
             d1y = (ys[id] - ys[id - 1]) / dt;
-            d1s.push(d1y, d1y);
+            d1s = [d1y, d1y, Math.abs(d1y)];
         }
         if (id === 2) {
             d1y = (ys[2] - ys[1]) / dt;
             d1s[0] = 3 * (ys[1] - ys[0])/ dt / 2 - d1y / 2;
             d1s[1] = d1y;
-            d1max = Math.max(d1max, d1s[0], -d1s[0], d1s[1], -d1s[1]);
+            d1s[2] = Math.max(Math.abs(d1s[0]), Math.abs(d1s[1]));
         }
         if (id > 2) {
             d1y = (ys[id] - ys[id - 2]) / 2 / dt;
-            d1s.push(d1y);
-            d1max = Math.max(d1max, d1y, -d1y);
+            d1s.splice(id - 1, 0, d1y);
+            d1s[d1s.length - 1] = Math.max(d1s[d1s.length - 1], d1y, -d1y);
         }
-        let d1fac = this.height/2/d1max;
-        // console.log(id, imax, ifac);
-        this.setState({ ys, i1s, d1s, d1max, d1fac });
+        this.setState({ ys, i1s, d1s });
     }
 
     handleLeave = e => {
@@ -102,11 +97,11 @@ class ThreeGraphs extends React.Component {
         // i1max = Math.max(i1max, i1y, -i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y)
 
-        let d1y = (ys[id + 1] - ys[id - 1]) / 2 / dt;
-        d1s.push(d1y);
+        let d1y = (ys[n] - ys[2 - 2]) / 2 / dt;
+        d1s.splice(n - 1, 0, d1y);
 
-        d1s.push(2 * (ys[id + 1] - ys[id])/ dt - d1y);
-        d1max = Math.max(d1max, Math.abs(d1y), Math.abs(d1s[id + 1]));
+        d1s.splice(n, 0, 2 * (ys[n] - ys[n - 1])/ dt - d1y);
+        d1s[n + 1] = Math.max(d1s[n + 1], Math.abs(d1y), Math.abs(d1s[n]));
         let d1fac = this.height/2/d1max;
         this.setState({ ys, i1s, d1s, d1fac });
     }
@@ -122,7 +117,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, width, dt, i1i, d1fac, logN} = state;
+        let {n, ys, i1s, d1s, width, dt, i1i, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -210,13 +205,13 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
-                                {!(j < ys.length - 2 && j < n) ? null : <Bar
+                                {!(j < ys.length - 3 || (ys.length === n + 1 && j === n)) ? null : <Bar
                                     key={`der${j}`}
                                     j={j}
                                     offset={0}
                                     dt={dt}
-                                    y={Math.round(d1s[j] * d1fac + this.height / 2)}
-                                    y1={Math.round(d1s[j + 1] * d1fac + this.height / 2 )}
+                                    y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
+                                    y1={Math.round(d1s[j +1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
                                     color={"green"}
                                 />}
                             </>
