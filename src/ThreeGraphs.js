@@ -14,7 +14,6 @@ class ThreeGraphs extends React.Component {
             d1s:[0],
             i2s: [0],
             d2s: [0],
-            i2max: 0,
             d1max: 0,
             d2max: 0,
             i1i: 0.0,
@@ -64,9 +63,6 @@ class ThreeGraphs extends React.Component {
         let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
         i1s.splice(id, 0, i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
-        // i1max = Math.max(i1max, i1y, -i1y);
-        // let i1fac = this.height/2/i1max;
-        let i1fac = this.height/2/i1s[i1s.length - 1];
 
         let d1s = (id < 1) ? [] : [...this.state.d1s];
         let d1y;
@@ -87,7 +83,7 @@ class ThreeGraphs extends React.Component {
         }
         let d1fac = this.height/2/d1max;
         // console.log(id, imax, ifac);
-        this.setState({ ys, i1s, d1s, d1max, i1fac, d1fac });
+        this.setState({ ys, i1s, d1s, d1max, d1fac });
     }
 
     handleLeave = e => {
@@ -105,7 +101,6 @@ class ThreeGraphs extends React.Component {
         i1s.splice(id + 1, 0, i1y);
         // i1max = Math.max(i1max, i1y, -i1y);
         i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y)
-        let i1fac = this.height/2/i1s[i1s.length - 1];
 
         let d1y = (ys[id + 1] - ys[id - 1]) / 2 / dt;
         d1s.push(d1y);
@@ -113,22 +108,21 @@ class ThreeGraphs extends React.Component {
         d1s.push(2 * (ys[id + 1] - ys[id])/ dt - d1y);
         d1max = Math.max(d1max, Math.abs(d1y), Math.abs(d1s[id + 1]));
         let d1fac = this.height/2/d1max;
-        this.setState({ ys, i1s, d1s, i1fac, d1fac });
+        this.setState({ ys, i1s, d1s, d1fac });
     }
 
     getInt = id => {
-        let { ys, i1max, dt, i1i, width } = this.state;
+        let { ys, dt, i1i, width } = this.state;
         let i1s = (id < 1) ? [] : [...this.state.i1s];
         let myI1i = (i1i > 0) ? this.i1iMax: (i1i < 0) ? -this.i1iMax : 0;
         let i1y = (id < 1) ? - myI1i * this.height * width / 2 : i1s[id - 1] + (ys[id - 1] + ys[id]) * dt / 2;
-        i1max = Math.max(i1max, i1y, -i1y);
+        i1s[i1s.length - 1] = Math.max(i1s[i1s.length - 1], i1y, -i1y);
         i1s.push(i1y);
-        let i1fac = this.height/2/i1max;
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, width, dt, i1i, i1fac, d1fac, logN} = state;
+        let {n, ys, i1s, d1s, width, dt, i1i, d1fac, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -212,8 +206,8 @@ class ThreeGraphs extends React.Component {
                                     j={j}
                                     offset={0} //{Math.round(dt/2)}
                                     dt={dt}
-                                    y={Math.round(i1s[j] * i1fac + this.height / 2)}
-                                    y1={Math.round(i1s[j + 1] * i1fac + this.height / 2 )}
+                                    y={Math.round(i1s[j] * this.height/2/i1s[i1s.length - 1] + this.height / 2)}
+                                    y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
