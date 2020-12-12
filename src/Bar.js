@@ -1,6 +1,6 @@
 import React from "react";
-const Bar = ({ j, dt, y, y1, offset, color }) => {
-    let t = offset + j * dt;
+const Bar = ({ j, dt, y, y1, color }) => {
+    let t = j * dt;
     let dy = y1 - y;
     let r = Math.sqrt(dt * dt + dy * dy);
     let angle = Math.atan2(dy, dt) * 180 / Math.PI;

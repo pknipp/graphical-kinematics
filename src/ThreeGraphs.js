@@ -6,7 +6,7 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 2.0,
+            logN: 0.6,
             width: 1000,
             mousePressed: false,
             ys: [null],
@@ -56,10 +56,10 @@ class ThreeGraphs extends React.Component {
 
         let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], i1i);
         let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], i2i);
-        let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s]);
-        // let d2s = this.getDer(id, d1s,(id === 0) ? [0] : [...this.state.d2s]);
+        let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s], 1);
+        let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, !id ? [0] : [...this.state.d2s], 2);
 
-        this.setState({ ys, i1s, d1s, i2s });
+        this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
     handleLeave = e => {
@@ -73,9 +73,11 @@ class ThreeGraphs extends React.Component {
 
         let i1s = this.getInt(n, ys, [...this.state.i1s]);
         let i2s = this.getInt(n, i1s,[...this.state.i2s]);
-        let d1s = this.getDer(n, ys, [...this.state.d1s]);
+        let d1s = this.getDer(n, ys, [...this.state.d1s], 1);
+        let d2s = this.getDer(n - 1, d1s,[...this.state.d2s], 2);
+        d2s = this.getDer(n, d1s,[...d2s], 2);
 
-        this.setState({ ys, i1s, d1s, i2s });
+        this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
     getInt = (id, fs, is, ii) => {
@@ -90,7 +92,7 @@ class ThreeGraphs extends React.Component {
         return newIs;
     }
 
-    getDer = (id, fs, ds) => {
+    getDer = (id, fs, ds, order) => {
         let { n, dt } = this.state;
         let dy;
         if (id === 1) {
@@ -111,12 +113,13 @@ class ThreeGraphs extends React.Component {
             ds.splice(n, 0, 2 * (fs[n] - fs[n - 1])/ dt - dy);
             ds[n + 1] = Math.max(ds[n + 1], Math.abs(dy), Math.abs(ds[n]));
         }
+        console.log(order, id, fs, ds);
         return ds;
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, width, dt, i1i, i2i, logN} = state;
+        let {n, ys, i1s, d1s, d2s, width, dt, i1i, i2i, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -205,38 +208,50 @@ class ThreeGraphs extends React.Component {
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
-                                    offset={0}
                                     dt={dt}
                                     y={Math.round(y + this.height / 2)}
                                     y1={Math.round(ys[j + 1] + this.height / 2 )}
                                     color={"blue"}
                                 />}
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
-                                    key={`int${j}`}
+                                    key={`i1${j}`}
                                     j={j}
-                                    offset={0} //{Math.round(dt/2)}
                                     dt={dt}
                                     y={Math.round(i1s[j] * this.height/2/i1s[i1s.length - 1] + this.height / 2)}
                                     y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
                                     color={"red"}
                                 />}
                                 {!((j < ys.length - 3) && j < n) ? null : <Bar
-                                    key={`der${j}`}
+                                    key={`d1${j}`}
                                     j={j}
-                                    offset={0}
                                     dt={dt}
                                     y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
                                     y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
                                     color={"green"}
                                 />}
                                 {(j !== n - 1) ? null : <Bar
-                                    key={`der${j}`}
+                                    key={`d1${j}`}
                                     j={j}
-                                    offset={0}
                                     dt={dt}
                                     y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
                                     y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
                                     color={"green"}
+                                />}
+                                {!((j < ys.length - 4) && j < n) ? null : <Bar
+                                    key={`d2${j}`}
+                                    j={j}
+                                    dt={dt}
+                                    y={Math.round(d2s[j] * this.height/2/d2s[d2s.length - 1] + this.height / 2)}
+                                    y1={Math.round(d2s[j + 1]*this.height/2/d2s[d2s.length-1] + this.height / 2 )}
+                                    color={"purple"}
+                                />}
+                                {(j!== n - 2 && j !== n - 1) ? null : <Bar
+                                    key={`d2${j}`}
+                                    j={j}
+                                    dt={dt}
+                                    y={Math.round(d2s[j] * this.height/2/d2s[d2s.length - 1] + this.height / 2)}
+                                    y1={Math.round(d2s[j + 1]*this.height/2/d2s[d2s.length-1] + this.height / 2 )}
+                                    color={"purple"}
                                 />}
                             </>
                         ))}
