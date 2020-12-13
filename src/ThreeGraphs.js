@@ -53,8 +53,8 @@ class ThreeGraphs extends React.Component {
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id, 0, y);
         // following two lines evaluate the function's 1st and 2nd definite integrals
-        let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s]);
-        let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s]);
+        let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], this.state.i1i, 1);
+        let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], this.state.i2i, 2);
         // following two lines evaluate the function's 1st and 2nd derivatives
         let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s], 1);
         let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, !id ? [0] : [...this.state.d2s], 2);
@@ -80,14 +80,13 @@ class ThreeGraphs extends React.Component {
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
-    getInt = (id, fs, is, ii) => {
+    getInt = (id, fs, is, ii, order) => {
         let { dt } = this.state;
         let newIs = (id === 0) ? [0] : [...is];
         //this is presently hardcoded for first integral.
         // Perhaps make it a single non-state instance variable (rather than two)?
-        // let myIi = (ii > 0) ? this.iiMax: (ii < 0) ? -this.iiMax : 0;
-        let iy = (id < 1) ? 0
-        //- myIi * this.height * width / 2
+        let myIi = (ii > 0) ? this.iiMax: (ii < 0) ? -this.iiMax : 0;
+        let iy = (id < 1) ? - myIi * this.height * (this.state.width / 2) ** order
         : newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
         newIs.splice(id, 0, iy);
         newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
@@ -222,14 +221,14 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(this.height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
                                     color={"red"}
                                 />}
-                                {/* {!(j < ys.length - 2 && j < n) ? null : <Bar
+                                {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(i2s[j] * this.height/2/i2s[i2s.length - 1] + this.height / 2)}
                                     y1={Math.round(i2s[j + 1] * this.height/2/i2s[i2s.length - 1] + this.height / 2 )}
                                     color={"purple"}
-                                />} */}
+                                />}
                                 {/* {!((j < ys.length - 3) && j < n) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
