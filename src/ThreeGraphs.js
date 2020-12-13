@@ -218,8 +218,8 @@ class ThreeGraphs extends React.Component {
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(i1s[j] * this.height/2/i1s[i1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(i1s[j + 1] * this.height/2/i1s[i1s.length - 1] + this.height / 2 )}
+                                    y={Math.round(this.height * (i1s[j] / i1s[i1s.length - 1] + 1) / 2)}
+                                    y1={Math.round(this.height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
                                     color={"red"}
                                 />}
                                 {/* {!(j < ys.length - 2 && j < n) ? null : <Bar
