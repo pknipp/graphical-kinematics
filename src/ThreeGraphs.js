@@ -14,12 +14,13 @@ class ThreeGraphs extends React.Component {
             d1s:[0],
             i2s: [0],
             d2s: [0],
-            i1i: 0.0,
-            i2i: 0.0,
-            avx: 1,
+            i1i: 0,
+            i2i: 0,
+            avx: 0,
         }
         this.height = 500;
         this.iiMax = 0.3;
+        this.colors = ["red", "green", "blue"];
     }
 
     componentDidMount() {
@@ -123,22 +124,20 @@ class ThreeGraphs extends React.Component {
         return  !ys ? null : (
             <>
                 <div>
-                    <b>Instructions:</b> Click mouse at a spot to the left of the rectangle and drag slowly to the right in order to create the graph of a function (blue).  The dotted line represents zero.  The indefinite integral (for user-controlled "initial conditions" which are either positive, negative, or zero) will appear as red, and  the derivative will be green.  I use simple formulas
-                    for calculating integral and derivative.
+                    <b>Instructions:</b>
+                    <ul>
+                        <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
+                        <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: the <span className="a">acceleration (<i>a</i>)</span>, the <span className="v">velocity (<i>v</i>)</span>, or the <span className="x">position (<i>x</i>)</span>.</li>
+                        <li>If needed, use the remaining slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="v">v</i> and/or <i className="x">x</i>).</li>
+                        <li> Click your mouse at a spot to the left of the rectangle and drag slowly to the right in order to create the graph for your chosen quantity.  (The dotted line represents zero.)</li>
+                        <li>  The colors for the graphs of <i className="a">a</i>, <i className="v">v</i>, and <i className="x">x</i> will respectively be <span className="a">red</span>, <span className="v">green</span>, and <span className="x">blue.</span></li>
+                    </ul>
                 </div>
                 <div>
                     <b>Bugs</b> (which are known):
                     <ul>
-                        <li>If resolution is too fine or if dragged too quickly, app ceases because the mouse misses a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
-                        <li>(Obviously) the derivative is rougher than the function itself.  There are various ways that I may "smooth" this.</li>
-                    </ul>
-                </div>
-                <div>
-                    <b>To-do</b> list (other than those items mentionned above):
-                    <ul>
-                        <li>Make the "language" of this specific to kinematics, ie for independent variable being the time <i>t</i> and dependent variables being the position <i>x</i>, velocity <i>v</i>, and acceleration <i>a</i>.</li>
-                        <li>Allow the user to specify whether he/she is drawing <i>x</i>, <i>v</i>, or <i>a</i>.  The other two functions would then get generated automatically.</li>
-                        <li>My inclination is to keep this qualitative rather than quantitative (ie, NOT putting numbers along either axis).</li>
+                        <li>If resolution is too fine or if dragged too quickly, the app ceases because the mouse has missed a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
+                        <li>(Obviously) derivatives is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>
                 <div className="sliders">
@@ -159,8 +158,8 @@ class ThreeGraphs extends React.Component {
                         <span>fine</span>
                     </div>
                     <div>
-                        <div>Quantity being mouse-drawn (a, v, or x): </div>
-                        <span>a</span>
+                        <div>Quantity being mouse-drawn (<i className="red">a</i>, <i className="v">v</i>, or <i classNeme="x">x</i>): </div>
+                        <span><i className="a">a</i></span>
                         <span>
                             <input
                                 type="range"
@@ -172,7 +171,7 @@ class ThreeGraphs extends React.Component {
                                 value={avx}
                             />
                         </span>
-                        <span>x</span>
+                        <span><i className="x">x</i></span>
                     </div>
                     {(avx > 1) ? null : <div>
                         <div>{(avx === 0) ? "velocity" : "position"}'s initial value (-, 0, or +): </div>
@@ -220,61 +219,61 @@ class ThreeGraphs extends React.Component {
                                     handleEnter={handleEnter}
                                     handleLeave={handleLeave}
                                 />}
-                                {!(j < ys.length - 2 && j < n) ? null : <Bar
+                                {(j > ys.length - 3 || j > n - 1) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(y + height / 2)}
                                     y1={Math.round(ys[j + 1] + height / 2 )}
-                                    color={"blue"}
+                                    color={this.colors[avx]}
                                 />}
-                                {!(j < ys.length - 2 && j < n) ? null : <Bar
+                                {(j > ys.length - 3 || j > n - 1 || avx > 1) ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(height * (i1s[j] / i1s[i1s.length - 1] + 1) / 2)}
                                     y1={Math.round(height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
-                                    color={"red"}
+                                    color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {!(j < ys.length - 2 && j < n) ? null : <Bar
+                                {(j > ys.length - 3 || j > n - 1 || avx > 0) ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(i2s[j] * height/2/i2s[i2s.length - 1] + height / 2)}
                                     y1={Math.round(i2s[j + 1] * height/2/i2s[i2s.length - 1] + height / 2 )}
-                                    color={"orange"}
+                                    color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {!((j < ys.length - 3) && j < n) ? null : <Bar
+                                {(j > ys.length - 4 || j > n - 1 || avx < 1) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d1s[j] *  height/2/d1s[d1s.length-1]+height/2)}
                                     y1={Math.round(d1s[j+1]*height/2/d1s[d1s.length-1]+height/2)}
-                                    color={"green"}
+                                    color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {(j !== n - 1) ? null : <Bar
+                                {(j !== n - 1 || avx < 1) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d1s[j] * height/2/d1s[d1s.length - 1] + height / 2)}
                                     y1={Math.round(d1s[j + 1]*height/2/d1s[d1s.length-1] + height / 2 )}
-                                    color={"green"}
+                                    color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {!((j < ys.length - 4) && j < n) ? null : <Bar
+                                {((j > ys.length - 5) || j > n - 1 || avx < 2) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
                                     y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
-                                    color={"purple"}
+                                    color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {(j!== n - 2 && j !== n - 1) ? null : <Bar
+                                {(!(j === n - 2 || j === n - 1) || avx < 2) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
                                     y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
-                                    color={"purple"}
+                                    color={this.colors[(avx + 1) % 3]}
                                 />}
                             </>
                         ))}
