@@ -81,13 +81,12 @@ class ThreeGraphs extends React.Component {
     }
 
     getInt = (id, fs, is, ii, order) => {
-        let { dt } = this.state;
+        let { iiMax, state, height } = this;
+        let { dt, width } = state;
         let newIs = (id === 0) ? [0] : [...is];
-        //this is presently hardcoded for first integral.
-        // Perhaps make it a single non-state instance variable (rather than two)?
-        let myIi = (ii > 0) ? this.iiMax: (ii < 0) ? -this.iiMax : 0;
-        let iy = (id < 1) ? - myIi * this.height * (this.state.width / 2) ** order
-        : newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
+        let myIi = (ii > 0) ? iiMax: (ii < 0) ? -iiMax : 0;
+        let iy = (id < 1) ? - myIi * height * (width / 2) ** order :
+             newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
         newIs.splice(id, 0, iy);
         newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
         return newIs;
@@ -209,56 +208,56 @@ class ThreeGraphs extends React.Component {
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(y + this.height / 2)}
-                                    y1={Math.round(ys[j + 1] + this.height / 2 )}
+                                    y={Math.round(y + height / 2)}
+                                    y1={Math.round(ys[j + 1] + height / 2 )}
                                     color={"blue"}
                                 />}
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(this.height * (i1s[j] / i1s[i1s.length - 1] + 1) / 2)}
-                                    y1={Math.round(this.height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
+                                    y={Math.round(height * (i1s[j] / i1s[i1s.length - 1] + 1) / 2)}
+                                    y1={Math.round(height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
                                     color={"red"}
                                 />}
                                 {!(j < ys.length - 2 && j < n) ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(i2s[j] * this.height/2/i2s[i2s.length - 1] + this.height / 2)}
-                                    y1={Math.round(i2s[j + 1] * this.height/2/i2s[i2s.length - 1] + this.height / 2 )}
+                                    y={Math.round(i2s[j] * height/2/i2s[i2s.length - 1] + height / 2)}
+                                    y1={Math.round(i2s[j + 1] * height/2/i2s[i2s.length - 1] + height / 2 )}
                                     color={"purple"}
                                 />}
                                 {/* {!((j < ys.length - 3) && j < n) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
+                                    y={Math.round(d1s[j] *  height/2/d1s[d1s.length-1]+height/2)}
+                                    y1={Math.round(d1s[j+1]*height/2/d1s[d1s.length-1]+height/2)}
                                     color={"green"}
                                 />}
                                 {(j !== n - 1) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(d1s[j] * this.height/2/d1s[d1s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d1s[j + 1]*this.height/2/d1s[d1s.length-1] + this.height / 2 )}
+                                    y={Math.round(d1s[j] * height/2/d1s[d1s.length - 1] + height / 2)}
+                                    y1={Math.round(d1s[j + 1]*height/2/d1s[d1s.length-1] + height / 2 )}
                                     color={"green"}
                                 />}
                                 {!((j < ys.length - 4) && j < n) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(d2s[j] * this.height/2/d2s[d2s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d2s[j + 1]*this.height/2/d2s[d2s.length-1] + this.height / 2 )}
+                                    y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
+                                    y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
                                     color={"purple"}
                                 />}
                                 {(j!== n - 2 && j !== n - 1) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(d2s[j] * this.height/2/d2s[d2s.length - 1] + this.height / 2)}
-                                    y1={Math.round(d2s[j + 1]*this.height/2/d2s[d2s.length-1] + this.height / 2 )}
+                                    y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
+                                    y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
                                     color={"purple"}
                                 />} */}
                             </>
