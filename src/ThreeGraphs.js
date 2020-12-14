@@ -6,8 +6,8 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 1.5,
-            width: 1000,
+            logN: 0.6,
+            width: 400,
             mousePressed: false,
             ys: [null],
             i1s: [0],
@@ -45,26 +45,34 @@ class ThreeGraphs extends React.Component {
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
         let { state, height, getInt, getDer } = this;
-        let { mousePressed, i1i, i2i } = state;
+        let { mousePressed, i1i, i2i, avx } = state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let ys = id ? [...state.ys] : [null];
+        let i1s = !id ? [0] : [...state.i1s];
+        let i2s = !id ? [0] : [...state.i2s];
+        let d1s = !id ? [0] : [...state.d1s];
+        let d2s = !id ? [0] : [...state.d2s];
+        let ys =  !id ?[null]:[...state.ys];
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(mousePressed && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(id, 0, y);
         // following two lines evaluate the function's 1st and 2nd definite integrals
-        let i1s = getInt(id, ys, state.i1s, i1i, 1);
-        let i2s = getInt(id, i1s,state.i2s, i2i, 2);
+        if (avx < 2) i1s = getInt(id, ys, i1s, i1i, 1);
+        if (avx < 1) i2s = getInt(id, i1s,i2s, i2i, 2);
         // following two lines evaluate the function's 1st and 2nd derivatives
-        let d1s = getDer(id, ys, state.d1s);
-        let d2s = getDer(id - ((id === 1) ? 0 : 1), d1s, state.d2s);
+        if (avx > 0) d1s = getDer(id, ys, d1s);
+        if (avx > 1) d2s = getDer(id - ((id === 1) ? 0 : 1), d1s, d2s);
 
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
     handleLeave = e => {
         let { state, height, getInt, getDer } = this;
-        let { mousePressed, n } = state;
+        let { mousePressed, n, avx } = state;
+        let i1s = [...state.i1s];
+        let i2s = [...state.i2s];
+        let d1s = [...state.d1s];
+        let d2s = [...state.d2s];
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = [...state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
@@ -72,11 +80,13 @@ class ThreeGraphs extends React.Component {
         let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(n, 0, y);
 
-        let i1s = getInt(n, ys, state.i1s);
-        let i2s = getInt(n, i1s,state.i2s);
-        let d1s = getDer(n, ys, state.d1s);
-        let d2s = getDer(n - 1, d1s, state.d2s);
-        d2s = getDer(n, d1s, d2s);
+        if (avx < 2) i1s = getInt(n, ys, state.i1s);
+        if (avx < 1) i2s = getInt(n, i1s,state.i2s);
+        if (avx > 0) d1s = getDer(n, ys, state.d1s);
+        if (avx > 1) {
+            d2s = getDer(n - 1, d1s, state.d2s);
+            d2s = getDer(n, d1s, d2s);
+        }
 
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
@@ -137,7 +147,7 @@ class ThreeGraphs extends React.Component {
                     <b>Bugs</b> (which are known):
                     <ul>
                         <li>If resolution is too fine or if dragged too quickly, the app ceases because the mouse has missed a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
-                        <li>(Obviously) derivatives is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
+                        <li>(Obviously) a derivative is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>
                 <div className="sliders">
@@ -158,7 +168,7 @@ class ThreeGraphs extends React.Component {
                         <span>fine</span>
                     </div>
                     <div>
-                        <div>Quantity being mouse-drawn (<i className="red">a</i>, <i className="v">v</i>, or <i classNeme="x">x</i>): </div>
+                        <div>Quantity being mouse-drawn (<i className="red">a</i>, <i className="v">v</i>, or <i className="x">x</i>): </div>
                         <span><i className="a">a</i></span>
                         <span>
                             <input
