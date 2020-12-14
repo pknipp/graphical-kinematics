@@ -16,7 +16,7 @@ class ThreeGraphs extends React.Component {
             d2s: [0],
             i1i: 0.0,
             i2i: 0.0,
-            xva: 1,
+            avx: 1,
         }
         this.height = 500;
         this.iiMax = 0.3;
@@ -119,7 +119,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN} = state;
+        let {n, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -159,40 +159,55 @@ class ThreeGraphs extends React.Component {
                         <span>fine</span>
                     </div>
                     <div>
-                        <div>1st integral's initial value (-, 0, or +): </div>
+                        <div>Quantity being mouse-drawn (a, v, or x): </div>
+                        <span>a</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleInput}
+                                name="avx"
+                                min="0"
+                                max="2"
+                                step="1"
+                                value={avx}
+                            />
+                        </span>
+                        <span>x</span>
+                    </div>
+                    {(avx > 1) ? null : <div>
+                        <div>{(avx === 0) ? "velocity" : "position"}'s initial value (-, 0, or +): </div>
                         <span>negative</span>
                         <span>
                             <input
                                 type="range"
                                 onChange={handleInput}
                                 name="i1i"
-                                min="-0.5"
-                                max="0.5"
-                                step="0.5"
+                                min="-1"
+                                max="1"
+                                step="1"
                                 value={i1i}
                             />
                         </span>
                         <span>positive</span>
-                    </div>
-                    <div>
-                        <div>2nd integral's initial value (-, 0, or +): </div>
+                    </div>}
+                    {(avx > 0) ? null : <div>
+                        <div>position's initial value (-, 0, or +): </div>
                         <span>negative</span>
                         <span>
                             <input
                                 type="range"
                                 onChange={handleInput}
                                 name="i2i"
-                                min="-0.5"
-                                max="0.5"
-                                step="0.5"
+                                min="-1"
+                                max="1"
+                                step="1"
                                 value={i2i}
                             />
                         </span>
                         <span>positive</span>
-                    </div>
+                    </div>}
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
-
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
                         {ys.map((y, j, ys) => (
