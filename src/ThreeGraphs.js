@@ -16,7 +16,7 @@ class ThreeGraphs extends React.Component {
             d2s: [0],
             i1i: 0.0,
             i2i: 0.0,
-            xva: 1,
+            avx: 1,
         }
         this.height = 500;
         this.iiMax = 0.3;
@@ -45,7 +45,7 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { mousePressed } = this.state;
+        let { mousePressed, i1s, i2s, d1s, d2s, i1i, i2i } = this.state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = id ? [...this.state.ys] : [null];
         // failing boolean means either that stripe was missed or mouse un-clicked
@@ -53,18 +53,24 @@ class ThreeGraphs extends React.Component {
         let y = e.nativeEvent.offsetY - this.height / 2;
         ys.splice(id, 0, y);
         // following two lines evaluate the function's 1st and 2nd definite integrals
-        let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], this.state.i1i, 1);
-        let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], this.state.i2i, 2);
+        // let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], this.state.i1i, 1);
+        // let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], this.state.i2i, 2);
+        // // following two lines evaluate the function's 1st and 2nd derivatives
+        // let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s], 1);
+        // let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, !id ? [0] : [...this.state.d2s], 2);
+        let i1s = this.getInt(id, ys, i1s, i1i, 1);
+        let i2s = this.getInt(id, i1s,i2s, i2i, 2);
         // following two lines evaluate the function's 1st and 2nd derivatives
-        let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s], 1);
-        let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, !id ? [0] : [...this.state.d2s], 2);
+        let d1s = this.getDer(id, ys, d1s, 1);
+        let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, d2s, 2);
 
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
     handleLeave = e => {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { mousePressed, n } = this.state;
+        let { state, getInt, getDer } = this;
+        let { mousePressed, n, i1s, i2s, d1s, d2s } = state;
         let ys = [...this.state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
@@ -80,19 +86,20 @@ class ThreeGraphs extends React.Component {
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
-    getInt = (id, fs, is, ii, order) => {
+    getInt = (id, fsOld, isOld, ii, order) => {
+        let is = [...isOld];
         let { iiMax, state, height } = this;
         let { dt, width } = state;
-        let newIs = (id === 0) ? [0] : [...is];
         let myIi = (ii > 0) ? iiMax: (ii < 0) ? -iiMax : 0;
         let iy = (id < 1) ? - myIi * height * (width / 2) ** order :
-             newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
-        newIs.splice(id, 0, iy);
-        newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
-        return newIs;
+             is[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
+        is.splice(id, 0, iy);
+        is[is.length - 1] = Math.max(newIs[is.length - 1], iy, -iy);
+        return is;
     }
 
-    getDer = (id, fs, ds, order) => {
+    getDer = (id, fs, dsOld, order) => {
+        let ds = [...dsOld];
         let { n, dt } = this.state;
         let dy;
         if (id === 1) {
@@ -118,7 +125,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, i2s, width, dt, i1i, i2i, logN} = state;
+        let {n, ys, i1s, d1s, i2s, width, dt, i1i, i2i, logN, avx} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -158,7 +165,23 @@ class ThreeGraphs extends React.Component {
                         <span>fine</span>
                     </div>
                     <div>
-                        <div>1st integral's initial value (-, 0, or +): </div>
+                        <div>Graph being mouse-drawn (a, v, or x): </div>
+                        <span>a</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleInput}
+                                name="avx"
+                                min="0"
+                                max="2"
+                                step="1"
+                                value={avx}
+                            />
+                        </span>
+                        <span>x</span>
+                    </div>
+                    {(avx > 1) ? null : <div>
+                        <div>{(avx === 0) ? "velocity" : "position"}'s initial value (-, 0, or +): </div>
                         <span>negative</span>
                         <span>
                             <input
@@ -172,9 +195,9 @@ class ThreeGraphs extends React.Component {
                             />
                         </span>
                         <span>positive</span>
-                    </div>
-                    <div>
-                        <div>2nd integral's initial value (-, 0, or +): </div>
+                    </div>}
+                    {(avx > 0) ? null : <div>
+                        <div>position's initial value (-, 0, or +): </div>
                         <span>negative</span>
                         <span>
                             <input
@@ -188,7 +211,7 @@ class ThreeGraphs extends React.Component {
                             />
                         </span>
                         <span>positive</span>
-                    </div>
+                    </div>}
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
 
