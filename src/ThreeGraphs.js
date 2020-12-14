@@ -17,6 +17,7 @@ class ThreeGraphs extends React.Component {
             i1i: 0,
             i2i: 0,
             avx: 0,
+            showInstructions: true,
         }
         this.height = 500;
         this.iiMax = 0.3;
@@ -124,6 +125,18 @@ class ThreeGraphs extends React.Component {
         return  !ys ? null : (
             <>
                 <div>
+                    <span>Show instructions</span>
+                    <span>
+                        <input
+                            type="checkbox"
+                            onChange={this.handleCheckbox}
+                            name="showInstructions"
+                            checked={this.state.showInstructions}
+                        >
+                        </input>
+                    </span>
+                </div>
+                {!this.state.showInstructions ? null : <div>
                     <b>Instructions:</b>
                     <ul>
                         <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
@@ -132,14 +145,12 @@ class ThreeGraphs extends React.Component {
                         <li> Click your mouse at a spot to the left of the rectangle and drag slowly to the right in order to create the graph for your chosen quantity.  (The dotted line represents zero.)</li>
                         <li>  The colors for the graphs of <i className="a">a</i>, <i className="v">v</i>, and <i className="x">x</i> will respectively be <span className="a">red</span>, <span className="v">green</span>, and <span className="x">blue.</span></li>
                     </ul>
-                </div>
-                <div>
-                    <b>Bugs</b> (which are known):
+                    <b>Notes</b>    :
                     <ul>
                         <li>If resolution is too fine or if dragged too quickly, the app ceases because the mouse has missed a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
                         <li>(Obviously) derivatives is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
                     </ul>
-                </div>
+                </div>}
                 <div className="sliders">
                     <div>
                         <div>Spatial resolution: </div>
