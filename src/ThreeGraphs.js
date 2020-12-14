@@ -20,8 +20,6 @@ class ThreeGraphs extends React.Component {
         }
         this.height = 500;
         this.iiMax = 0.3;
-        // this.i1iMax = 0.3;
-        // this.i2iMax = 0.3;
     }
 
     componentDidMount() {
@@ -45,54 +43,57 @@ class ThreeGraphs extends React.Component {
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
     handleEnter = e => {
-        let { mousePressed } = this.state;
+        let { state, height, getInt, getDer } = this;
+        let { mousePressed, i1i, i2i } = state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let ys = id ? [...this.state.ys] : [null];
+        let ys = id ? [...state.ys] : [null];
         // failing boolean means either that stripe was missed or mouse un-clicked
         if (!(mousePressed && id === ys.length - 1)) return;
-        let y = e.nativeEvent.offsetY - this.height / 2;
+        let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(id, 0, y);
         // following two lines evaluate the function's 1st and 2nd definite integrals
-        let i1s = this.getInt(id, ys, (id === 0) ? [0] : [...this.state.i1s], this.state.i1i, 1);
-        let i2s = this.getInt(id, i1s,(id === 0) ? [0] : [...this.state.i2s], this.state.i2i, 2);
+        let i1s = getInt(id, ys, state.i1s, i1i, 1);
+        let i2s = getInt(id, i1s,state.i2s, i2i, 2);
         // following two lines evaluate the function's 1st and 2nd derivatives
-        let d1s = this.getDer(id, ys, (id === 0) ? [0] : [...this.state.d1s], 1);
-        let d2s = this.getDer(id - ((id === 1) ? 0 : 1), d1s, !id ? [0] : [...this.state.d2s], 2);
+        let d1s = getDer(id, ys, state.d1s);
+        let d2s = getDer(id - ((id === 1) ? 0 : 1), d1s, state.d2s);
 
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
     handleLeave = e => {
+        let { state, height, getInt, getDer } = this;
+        let { mousePressed, n } = state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let { mousePressed, n } = this.state;
-        let ys = [...this.state.ys];
+        let ys = [...state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
-        let y = e.nativeEvent.offsetY - this.height / 2;
+        let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(n, 0, y);
 
-        let i1s = this.getInt(n, ys, [...this.state.i1s]);
-        let i2s = this.getInt(n, i1s,[...this.state.i2s]);
-        let d1s = this.getDer(n, ys, [...this.state.d1s]);
-        let d2s = this.getDer(n - 1, d1s,[...this.state.d2s]);
-        d2s = this.getDer(n, d1s,[...d2s], 2);
+        let i1s = getInt(n, ys, state.i1s);
+        let i2s = getInt(n, i1s,state.i2s);
+        let d1s = getDer(n, ys, state.d1s);
+        let d2s = getDer(n - 1, d1s, state.d2s);
+        d2s = getDer(n, d1s, d2s);
 
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
-    getInt = (id, fs, is, ii, order) => {
+    getInt = (id, fs, isOld, ii, order) => {
+        let is = [...isOld];
         let { iiMax, state, height } = this;
         let { dt, width } = state;
-        let newIs = (id === 0) ? [0] : [...is];
         let myIi = (ii > 0) ? iiMax: (ii < 0) ? -iiMax : 0;
         let iy = (id < 1) ? - myIi * height * (width / 2) ** order :
-             newIs[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
-        newIs.splice(id, 0, iy);
-        newIs[newIs.length - 1] = Math.max(newIs[newIs.length - 1], iy, -iy);
-        return newIs;
+             is[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
+        is.splice(id, 0, iy);
+        is[is.length - 1] = Math.max(is[is.length - 1], iy, -iy);
+        return is;
     }
 
-    getDer = (id, fs, ds, order) => {
+    getDer = (id, fs, dsOld) => {
+        let ds = [...dsOld];
         let { n, dt } = this.state;
         let dy;
         if (id === 1) {
@@ -118,7 +119,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, i2s, width, dt, i1i, i2i, logN} = state;
+        let {n, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN} = state;
         return  !ys ? null : (
             <>
                 <div>
@@ -226,9 +227,9 @@ class ThreeGraphs extends React.Component {
                                     dt={dt}
                                     y={Math.round(i2s[j] * height/2/i2s[i2s.length - 1] + height / 2)}
                                     y1={Math.round(i2s[j + 1] * height/2/i2s[i2s.length - 1] + height / 2 )}
-                                    color={"purple"}
+                                    color={"orange"}
                                 />}
-                                {/* {!((j < ys.length - 3) && j < n) ? null : <Bar
+                                {!((j < ys.length - 3) && j < n) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
@@ -259,7 +260,7 @@ class ThreeGraphs extends React.Component {
                                     y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
                                     y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
                                     color={"purple"}
-                                />} */}
+                                />}
                             </>
                         ))}
                     </div>
