@@ -17,6 +17,7 @@ class ThreeGraphs extends React.Component {
             i1i: 0,
             i2i: 0,
             avx: 0,
+            id: -1,
             showInstructions: true,
         }
         this.height = 500;
@@ -54,7 +55,12 @@ class ThreeGraphs extends React.Component {
         let d2s = !id ? [0] : [...state.d2s];
         let ys =  !id ?[null]:[...state.ys];
         // failing boolean means either that stripe was missed or mouse un-clicked
-        if (!(mousePressed && id === ys.length - 1)) return;
+        let idLast = ys.length - 2;
+        console.log(mousePressed, id, ys.length - 1)
+        if (!(mousePressed && id === ys.length - 1)) {
+            console.log("failure");
+            return
+        };
         let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(id, 0, y);
         // following two lines evaluate the function's 1st and 2nd definite integrals
@@ -63,8 +69,8 @@ class ThreeGraphs extends React.Component {
         // following two lines evaluate the function's 1st and 2nd derivatives
         if (avx > 0) d1s = getDer(id, ys, d1s);
         if (avx > 1) d2s = getDer(id - ((id === 1) ? 0 : 1), d1s, d2s);
-
-        this.setState({ ys, i1s, d1s, i2s, d2s });
+        console.log("bottom of onEnter handler");
+        this.setState({ ys, i1s, d1s, i2s, d2s, id });
     }
 
     handleLeave = e => {
@@ -77,7 +83,8 @@ class ThreeGraphs extends React.Component {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = [...state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
-        if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return
+        console.log("Leave", mousePressed, id, ys.length - 2);
+        if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return;
         let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(n, 0, y);
 
@@ -88,7 +95,7 @@ class ThreeGraphs extends React.Component {
             d2s = getDer(n - 1, d1s, state.d2s);
             d2s = getDer(n, d1s, d2s);
         }
-
+        console.log("bottom of onLeave event handler");
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
