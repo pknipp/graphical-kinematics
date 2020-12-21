@@ -52,32 +52,31 @@ class ThreeGraphs extends React.Component {
         let { state, height, getInt, getDer } = this;
         let { mousePressed, i1i, i2i, avx } = state;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let i1s = !id ? [0] : [...state.i1s];
-        let i2s = !id ? [0] : [...state.i2s];
-        let d1s = !id ? [0] : [...state.d1s];
-        let d2s = !id ? [0] : [...state.d2s];
-        let ys =  !id ?[]:[...state.ys];
+
         // failing boolean means either that stripe was missed or mouse un-clicked
 
         let yNext = e.nativeEvent.offsetY - height / 2;
         if (!mousePressed) return;
-        if (!ys.length) {
-            if (!id) return;
-            ys.push(yNext);
-        } else {
-            let idLast = ys.length - 1;
-            let yLast = ys[idLast];
-            for (let j = idLast + 1; j <= id; j++) {
-                console.log(j);
-                let y = yLast + (yNext - yLast) * (j - idLast) / (id - idLast);
-                ys.splice(id, 0, y);
-                // following two lines evaluate the function's 1st and 2nd definite integrals
-                if (avx < 2) i1s = getInt(id, ys, i1s, i1i, 1);
-                if (avx < 1) i2s = getInt(id, i1s,i2s, i2i, 2);
-                // following two lines evaluate the function's 1st and 2nd derivatives
-                if (avx > 0) d1s = getDer(id, ys, d1s);
-                if (avx > 1) d2s = getDer(id - ((id === 1) ? 0 : 1), d1s, d2s);
+        let ys =  !id ? [] :[...state.ys];
+        let i1s = !id ? [0] : [...state.i1s];
+        let i2s = !id ? [0] : [...state.i2s];
+        let d1s = !id ? [0] : [...state.d1s];
+        let d2s = !id ? [0] : [...state.d2s];
+        let idLast = ys.length - 1;
+        for (let j = ys.length; j <= id; j++) {
+            if (j === 0) {
+                if (j !== id) return;
+                ys.push(yNext);
+            } else {
+                let y = ys[idLast] + (yNext - ys[idLast]) * (j - idLast) / (id - idLast);
+                ys.push(y);
             }
+            // following two lines evaluate the function's 1st and 2nd definite integrals
+            if (avx < 2) i1s = getInt(j, ys, i1s, i1i, 1);
+            if (avx < 1) i2s = getInt(j, i1s,i2s, i2i, 2);
+            // following two lines evaluate the function's 1st and 2nd derivatives
+            if (avx > 0) d1s = getDer(j, ys, d1s);
+            if (avx > 1) d2s = getDer(j - ((id === 1) ? 0 : 1), d1s, d2s);
         }
         this.setState({ ys, i1s, d1s, i2s, d2s, id });
     }
@@ -106,7 +105,6 @@ class ThreeGraphs extends React.Component {
             d2s = getDer(n - 1, d1s, state.d2s);
             d2s = getDer(n, d1s, d2s);
         }
-        // console.log("bottom of onLeave event handler");
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
@@ -256,9 +254,9 @@ class ThreeGraphs extends React.Component {
                                     // y={y}
                                     dt={dt}
                                     handleEnter={handleEnter}
-                                    handleLeave={handleLeave}
+                                    // handleLeave={handleLeave}
                                 />}
-                                {(j > ys.length - 3 || j > n - 1) ? null : <Bar
+                                {(j > ys.length - 2 || j > n - 1) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
@@ -266,7 +264,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(ys[j + 1] + height / 2 )}
                                     color={this.colors[avx]}
                                 />}
-                                {(j > ys.length - 3 || j > n - 1 || avx > 1) ? null : <Bar
+                                {(j > ys.length - 2 || j > n - 1 || avx > 1) ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
@@ -274,7 +272,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
                                     color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {(j > ys.length - 3 || j > n - 1 || avx > 0) ? null : <Bar
+                                {(j > ys.length - 2 || j > n - 1 || avx > 0) ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
@@ -282,7 +280,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(i2s[j + 1] * height/2/i2s[i2s.length - 1] + height / 2 )}
                                     color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {(j > ys.length - 4 || j > n - 1 || avx < 1) ? null : <Bar
+                                {(j > ys.length - 3 || j > n - 1 || avx < 1) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
@@ -298,7 +296,7 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(d1s[j + 1]*height/2/d1s[d1s.length-1] + height / 2 )}
                                     color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {((j > ys.length - 5) || j > n - 1 || avx < 2) ? null : <Bar
+                                {((j > ys.length - 4) || j > n - 1 || avx < 2) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
