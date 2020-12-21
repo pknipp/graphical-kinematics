@@ -1,5 +1,5 @@
 import React from "react";
-const Strip = ({ j, handleEnter, handleLeave, y, height, dt }) => {
+const Strip = ({ j, handleEnter, handleLeave, height, dt }) => {
     return (
         <div
             className="strip"

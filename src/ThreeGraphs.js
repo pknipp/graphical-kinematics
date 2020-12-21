@@ -6,7 +6,7 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 1.5,
+            logN: 1.25,
             width: 400,
             mousePressed: false,
             ys: [null],
@@ -27,9 +27,10 @@ class ThreeGraphs extends React.Component {
 
     componentDidMount() {
         let n = Math.round(10 ** this.state.logN);
+        let ss= new Array(n).fill(null);
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
-        this.setState({ n, dt, width });
+        this.setState({ n, dt, width, ss });
     }
 
     handleLogN = e => {
@@ -37,7 +38,8 @@ class ThreeGraphs extends React.Component {
         let n = Math.round(10 ** logN);
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
-        this.setState({ logN, n, dt, width });
+        let ss = new Array(n).fill(null);
+        this.setState({ logN, n, dt, width, ss });
     }
 
     handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
@@ -45,6 +47,12 @@ class ThreeGraphs extends React.Component {
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
     handleDown = _ => this.setState({ mousePressed: true });
     handleUp   = _ => this.setState({ mousePressed: false});
+
+    // handleEnter = e => {
+    //     e.preventDefault();
+    //     console.log(this.state.mousePressed, e.target.id);
+    // }
+
     handleEnter = e => {
         let { state, height, getInt, getDer } = this;
         let { mousePressed, i1i, i2i, avx } = state;
@@ -83,8 +91,10 @@ class ThreeGraphs extends React.Component {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = [...state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
-        console.log("Leave", mousePressed, id, ys.length - 2);
-        if (!(mousePressed && id === n - 1 && id === ys.length - 2)) return;
+        // console.log("Leave", mousePressed, id, ys.length - 2);
+        if (!(mousePressed &&
+            // id === n - 1 &&
+            id === ys.length - 2)) return;
         let y = e.nativeEvent.offsetY - height / 2;
         ys.splice(n, 0, y);
 
@@ -95,7 +105,7 @@ class ThreeGraphs extends React.Component {
             d2s = getDer(n - 1, d1s, state.d2s);
             d2s = getDer(n, d1s, d2s);
         }
-        console.log("bottom of onLeave event handler");
+        // console.log("bottom of onLeave event handler");
         this.setState({ ys, i1s, d1s, i2s, d2s });
     }
 
@@ -138,8 +148,8 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx} = state;
-        return  !ys ? null : (
+        let {n, ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx} = state;
+        return  !ss ? null : (
             <>
                 <div>
                     <span>Show instructions</span>
@@ -237,12 +247,12 @@ class ThreeGraphs extends React.Component {
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
-                        {ys.map((y, j, ys) => (
+                        {ss.map((s, j) => (
                             <>
                                 {!(j < n) ? null : <Strip key={`strip${j}`}
                                     j={j}
                                     height={height}
-                                    y={y}
+                                    // y={y}
                                     dt={dt}
                                     handleEnter={handleEnter}
                                     handleLeave={handleLeave}
@@ -251,7 +261,7 @@ class ThreeGraphs extends React.Component {
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(y + height / 2)}
+                                    y={Math.round(ys[j] + height / 2)}
                                     y1={Math.round(ys[j + 1] + height / 2 )}
                                     color={this.colors[avx]}
                                 />}
