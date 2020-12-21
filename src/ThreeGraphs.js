@@ -7,7 +7,7 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 1.25,
-            width: 400,
+            width: 1000,
             mousePressed: false,
             ys: [],
             i1s: [0],
@@ -45,12 +45,13 @@ class ThreeGraphs extends React.Component {
     handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
-    handleDown = _ => this.setState({ mousePressed: true });
+    handleDown = _ => this.setState({ mousePressed: true, ys: [] });
     handleUp   = _ => this.setState({ mousePressed: false});
 
     handleEnter = e => {
         let { state, height, getInt, getDer } = this;
-        let { mousePressed, i1i, i2i, avx } = state;
+        let { mousePressed, i1i, i2i, avx, dt } = state;
+        console.log("top of handleEnter", mousePressed);
         if (!mousePressed) return;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys =  [...state.ys];
@@ -58,12 +59,19 @@ class ThreeGraphs extends React.Component {
         let i2s = [...state.i2s];
         let d1s = [...state.d1s];
         let d2s = [...state.d2s];
-        let idLast = ys.length - 1;
-        let yNext = e.nativeEvent.offsetY - height / 2;
+        let y3 = e.nativeEvent.offsetY - height / 2;
+        let c1, c2, c3;
+        let id2 = ys.length - 1;
+        let id1 = id2 - 1;
+        if (id2 > 0) {
+            c1 = ys[id1] / (id - id1);
+            c2 = ys[id2] / (id2 - id);
+            c3 = y3 / (id - id1) / (id - id2);
+        }
         for (let j = ys.length; j <= id; j++) {
-            if (j === 0 && id > 0) return;
-            // Use linear interpolation unless at first point
-            ys.push(yNext + ((!id) ? 0 : (yNext - ys[idLast]) * (j - id) / (id - idLast)));
+            if (j < 2 && id !== j) return;
+            // Use quadratic interpolation unless at first two points
+            ys.push((j < 2) ? y3 : c1*(j-id2)*(j-id)+c2*(j-id1)*(j-id)+c3*(j-id1)*(j-id2));
             // following two lines evaluate the function's 1st and 2nd definite integrals
             if (avx < 2) i1s = getInt(j, ys, i1s, i1i, 1);
             if (avx < 1) i2s = getInt(j, i1s,i2s, i2i, 2);
@@ -86,7 +94,6 @@ class ThreeGraphs extends React.Component {
         // Last boolean means that this only handles when leaving the last stripe.
         if (!(mousePressed && id === n - 1 && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - height / 2;
-        // ys.splice(n, 0, y);
         ys.push(y);
 
         if (avx < 2) i1s = getInt(n, ys, state.i1s);
@@ -164,7 +171,7 @@ class ThreeGraphs extends React.Component {
                     </ul>
                     <b>Notes</b>    :
                     <ul>
-                        <li>If resolution is too fine or if dragged too quickly, the app ceases because the mouse has missed a virtual stripe in the DOM.  I can hack a solution for this via interpolation.</li>
+                        <li>If resolution is too fine or if dragged too quickly the mouse may miss one or more stripes in the DOM, in which case the app interpolates.</li>
                         <li>(Obviously) a derivative is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>}
