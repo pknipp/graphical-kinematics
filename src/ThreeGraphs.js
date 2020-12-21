@@ -1,4 +1,5 @@
 import React from "react";
+import matrixInverse from "matrix-inverse";
 import Strip from "./Strip";
 import Bar from "./Bar";
 // import IC from "./IC";
@@ -16,13 +17,14 @@ class ThreeGraphs extends React.Component {
             d2s: [0],
             i1i: 0,
             i2i: 0,
-            avx: 0,
+            avx: 2,
             id: -1,
             showInstructions: true,
         }
         this.height = 500;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
+        this.nFit = 8;
     }
 
     componentDidMount() {
@@ -46,11 +48,16 @@ class ThreeGraphs extends React.Component {
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
     handleDown = _ => this.setState({ mousePressed: true, ys: [] });
-    handleUp   = _ => this.setState({ mousePressed: false});
+    handleUp   = _ => {
+        let [ys, d1s, d2s] = (!this.state.ys.length) ?
+            [[...this.state.ys], [...this.state.d1s], [...this.state.d2s]] :
+            this.smooth(this.state.ys);
+        this.setState({ mousePressed: false, ys, d1s, d2s });
+    }
 
     handleEnter = e => {
         let { state, height, getInt, getDer } = this;
-        let { mousePressed, i1i, i2i, avx, dt } = state;
+        let { mousePressed, i1i, i2i, avx } = state;
         console.log("top of handleEnter", mousePressed);
         if (!mousePressed) return;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
@@ -104,6 +111,51 @@ class ThreeGraphs extends React.Component {
             d2s = getDer(n, d1s, d2s);
         }
         this.setState({ ys, i1s, d1s, i2s, d2s });
+    }
+
+    smooth = ysOld => {
+        let ys = [...ysOld];
+        let matrix = [];
+        let vector = new Array(this.nFit).fill(0);
+        for (let m = 0; m < this.nFit; m++){
+            matrix.push(new Array(this.nFit).fill(0));
+        }
+        for (let j = 0; j < ys.length; j++) {
+            for (let m = 0; m < this.nFit; m++) {
+                vector[m] += ys[j] * j ** m;
+                for (let n = 0; n < this.nFit; n++) {
+                    matrix[m][n] += j ** (m + n);
+                }
+            }
+        }
+        let invMatrix = matrixInverse(matrix);
+        let newVector = [];
+        for (let m = 0; m < this.nFit; m++) {
+            let newV = 0;
+            for (let n = 0; n < this.nFit; n++) {
+                newV += invMatrix[m][n] * vector[n];
+            }
+            newVector.push(newV);
+        }
+        let smooth = [];
+        let i1s = [];
+        let i2s = [];
+        let d1s = [];
+        let d2s = [];
+        for (let j = 0; j < ys.length; j++) {
+            let newY = 0;
+            let newD1= 0;
+            let newD2= 0;
+            for (let m = 0; m < this.nFit; m++) {
+                newY += newVector[m] * j ** m;
+                newD1+= ((m < 1) ? 0 : newVector[m] * m * j ** (m - 1));
+                newD2+= ((m < 2) ? 0 : newVector[m] * m * (m - 1) * j ** (m - 2));
+            }
+            smooth.push(newY);
+            d1s.push(newD1);
+            d2s.push(newD2);
+        }
+        return [smooth, d1s, d2s];
     }
 
     getInt = (id, fs, isOld, ii, order) => {
