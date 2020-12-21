@@ -51,26 +51,19 @@ class ThreeGraphs extends React.Component {
     handleEnter = e => {
         let { state, height, getInt, getDer } = this;
         let { mousePressed, i1i, i2i, avx } = state;
-        let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-
-        // failing boolean means either that stripe was missed or mouse un-clicked
-
-        let yNext = e.nativeEvent.offsetY - height / 2;
         if (!mousePressed) return;
-        let ys =  !id ? [] :[...state.ys];
-        let i1s = !id ? [0] : [...state.i1s];
-        let i2s = !id ? [0] : [...state.i2s];
-        let d1s = !id ? [0] : [...state.d1s];
-        let d2s = !id ? [0] : [...state.d2s];
+        let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
+        let ys =  [...state.ys];
+        let i1s = [...state.i1s];
+        let i2s = [...state.i2s];
+        let d1s = [...state.d1s];
+        let d2s = [...state.d2s];
         let idLast = ys.length - 1;
+        let yNext = e.nativeEvent.offsetY - height / 2;
         for (let j = ys.length; j <= id; j++) {
-            if (j === 0) {
-                if (j !== id) return;
-                ys.push(yNext);
-            } else {
-                let y = ys[idLast] + (yNext - ys[idLast]) * (j - idLast) / (id - idLast);
-                ys.push(y);
-            }
+            if (j === 0 && id > 0) return;
+            // Use linear interpolation unless at first point
+            ys.push(yNext + ((!id) ? 0 : (yNext - ys[idLast]) * (j - id) / (id - idLast)));
             // following two lines evaluate the function's 1st and 2nd definite integrals
             if (avx < 2) i1s = getInt(j, ys, i1s, i1i, 1);
             if (avx < 1) i2s = getInt(j, i1s,i2s, i2i, 2);
@@ -91,12 +84,10 @@ class ThreeGraphs extends React.Component {
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
         let ys = [...state.ys];
         // Last boolean means that this only handles when leaving the last stripe.
-        // console.log("Leave", mousePressed, id, ys.length - 2);
-        if (!(mousePressed &&
-            // id === n - 1 &&
-            id === ys.length - 2)) return;
+        if (!(mousePressed && id === n - 1 && id === ys.length - 1)) return;
         let y = e.nativeEvent.offsetY - height / 2;
-        ys.splice(n, 0, y);
+        // ys.splice(n, 0, y);
+        ys.push(y);
 
         if (avx < 2) i1s = getInt(n, ys, state.i1s);
         if (avx < 1) i2s = getInt(n, i1s,state.i2s);
@@ -251,10 +242,9 @@ class ThreeGraphs extends React.Component {
                                 {!(j < n) ? null : <Strip key={`strip${j}`}
                                     j={j}
                                     height={height}
-                                    // y={y}
                                     dt={dt}
                                     handleEnter={handleEnter}
-                                    // handleLeave={handleLeave}
+                                    handleLeave={handleLeave}
                                 />}
                                 {(j > ys.length - 2 || j > n - 1) ? null : <Bar
                                     key={`bar${j}`}
