@@ -16,7 +16,7 @@ class ThreeGraphs extends React.Component {
             d2s: [0],
             i1i: 0,
             i2i: 0,
-            avx: 0,
+            avx: 2,
             id: -1,
             showInstructions: true,
         }
@@ -45,12 +45,21 @@ class ThreeGraphs extends React.Component {
     handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
-    handleDown = _ => this.setState({ mousePressed: true, ys: [] });
-    handleUp   = _ => this.setState({ mousePressed: false});
+    handleDown = e => {
+        e.preventDefault();
+        this.setState({ mousePressed: true, ys: [], i1s: [0], i2s: [0], d1s: [0], d2s: [0] });
+    }
+    handleUp   = e => {
+        e.preventDefault();
+        this.setState({ mousePressed: false,
+        //  d2s: this.smooth(this.state.d2s, 5)
+        });
+    };
 
     handleEnter = e => {
+        e.preventDefault();
         let { state, height, getInt, getDer } = this;
-        let { mousePressed, i1i, i2i, avx, dt } = state;
+        let { mousePressed, i1i, i2i, avx } = state;
         console.log("top of handleEnter", mousePressed);
         if (!mousePressed) return;
         let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
@@ -83,6 +92,7 @@ class ThreeGraphs extends React.Component {
     }
 
     handleLeave = e => {
+        e.preventDefault();
         let { state, height, getInt, getDer } = this;
         let { mousePressed, n, avx } = state;
         let i1s = [...state.i1s];
@@ -104,6 +114,17 @@ class ThreeGraphs extends React.Component {
             d2s = getDer(n, d1s, d2s);
         }
         this.setState({ ys, i1s, d1s, i2s, d2s });
+    }
+
+    smooth = (fsOld, n) => {
+        let fsMax = 0;
+        let fs = [...fsOld].slice(0, -1);
+        for (let j = n; j < fs.length - n; j++) {
+            fs[j] = fsOld.slice(j - n, j + n + 1).sort()[n];
+            fsMax = Math.max(fsMax, Math.abs(fs[j]));
+        }
+        fs.push(fsMax)
+        return fs;
     }
 
     getInt = (id, fs, isOld, ii, order) => {
