@@ -26,15 +26,14 @@ class ThreeGraphs extends React.Component {
         this.height = 500;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
-        this.N = 2;
-        this.M = 3;
+        this.N = 5;
+        this.M = 4;
     }
 
     componentDidMount() {
         let n = Math.round(10 ** this.state.logN);
         let ss = new Array(n + 1).fill(null);
         let ys = {};
-        // let ys = new Array(n + 1).fill(null);
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
         this.setState({ n, dt, width, ss,
@@ -175,20 +174,23 @@ class ThreeGraphs extends React.Component {
                     vecSol[i] += matrixInv[i][j] * vector[j];
                 }
             }
+            let idMin = (id === this.N) ? 0 : id;
+            let idMax = (id === ids.length - this.N - 1) ? ids.length - 1 : id;
+            for (let id2 = idMin; id2 <= idMax; id2++) {
             let y = 0;
             let d1= 0;
             let d2= 0;
             for (let i = 0; i < this.M; i++) {
-                y += vecSol[i] * id ** i;
-                if (i > 0) d1 += vecSol[i] * i * id ** (i - 1);
-                if (i > 1) d2 += vecSol[i] * i * (i - 1) * id ** (i - 2);
+                y += vecSol[i] * id2 ** i;
+                if (i > 0) d1 += vecSol[i] * i * id2 ** (i - 1);
+                if (i > 1) d2 += vecSol[i] * i * (i - 1) * id2 ** (i - 2);
             }
-            console.log(id, ys[id], y);
-            newYs[id] = y;
-            d1s[id] = d1;
-            d2s[id] = d2;
+            newYs[id2] = y;
+            d1s[id2] = d1;
+            d2s[id2] = d2;
             d1max = Math.max(d1max, Math.abs(d1));
             d2max = Math.max(d2max, Math.abs(d2));
+            }
         }
         return {newYs, d1s, d1max, d2s, d2max};
     }
@@ -351,14 +353,14 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(ys[j + 1] + height / 2 )}
                                     color={this.colors[avx]}
                                 />}
-                                {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined) ? null : <Bar
+                                {/* {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined) ? null : <Bar
                                     key={`newBar${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.newYs[j] + height / 2)}
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
                                     color={"orange"}
-                                />}
+                                />} */}
                                 {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
