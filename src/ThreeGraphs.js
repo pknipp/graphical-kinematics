@@ -11,6 +11,8 @@ class ThreeGraphs extends React.Component {
             width: 1000,
             mousePressed: false,
             ys: {},
+            d1max: 0,
+            d2max: 0,
             i1s: [0],
             d1s:[0],
             i2s: [0],
@@ -24,8 +26,8 @@ class ThreeGraphs extends React.Component {
         this.height = 500;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
-        this.N = 1;
-        this.M = 2;
+        this.N = 2;
+        this.M = 3;
     }
 
     componentDidMount() {
@@ -61,10 +63,10 @@ class ThreeGraphs extends React.Component {
     }
     handleUp   = e => {
         e.preventDefault();
-        let [newYs, d1s] = this.fit(this.state.ys);
+        let { newYs, d1s, d1max, d2s, d2max } = this.fit(this.state.ys);
         this.setState({ mousePressed: false,
         //  d2s: this.smooth(this.state.d2s, 5)
-            newYs, d1s});
+            newYs, d1s, d1max, d2s, d2max});
     };
 
     handleEnter = e => {
@@ -147,6 +149,9 @@ class ThreeGraphs extends React.Component {
     fit = ys => {
         let newYs = {...ys};
         let d1s = {};
+        let d2s = {};
+        let d1max=0;
+        let d2max=0;
         let ids = Object.keys(ys);
         for (let id = this.N; id < ids.length - this.N; id++) {
             let someIds = ids.slice(id - this.N, id + this.N + 1);
@@ -172,15 +177,20 @@ class ThreeGraphs extends React.Component {
             }
             let y = 0;
             let d1= 0;
+            let d2= 0;
             for (let i = 0; i < this.M; i++) {
                 y += vecSol[i] * id ** i;
                 if (i > 0) d1 += vecSol[i] * i * id ** (i - 1);
+                if (i > 1) d2 += vecSol[i] * i * (i - 1) * id ** (i - 2);
             }
             console.log(id, ys[id], y);
             newYs[id] = y;
             d1s[id] = d1;
+            d2s[id] = d2;
+            d1max = Math.max(d1max, Math.abs(d1));
+            d2max = Math.max(d2max, Math.abs(d2));
         }
-        return [newYs, d1s];
+        return {newYs, d1s, d1max, d2s, d2max};
     }
 
     getInt = (id, fs, isOld, ii, order) => {
@@ -353,9 +363,17 @@ class ThreeGraphs extends React.Component {
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.d1s[j] + height / 2)}
-                                    y1={Math.round(state.d1s[j + 1] + height / 2 )}
+                                    y={Math.round(state.d1s[j] *  height / 2 / state.d1max + height / 2)}
+                                    y1={Math.round(state.d1s[j+1] *  height / 2 / state.d1max + height / 2)}
                                     color={"purple"}
+                                />}
+                                {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) ? null : <Bar
+                                    key={`d2${j}`}
+                                    j={j}
+                                    dt={dt}
+                                    y={Math.round(state.d2s[j] *  height / 2 / state.d2max + height / 2)}
+                                    y1={Math.round(state.d2s[j+1] *  height / 2 / state.d2max + height / 2)}
+                                    color={"green"}
                                 />}
                                 {/* {(j > ys.length - 2 || j > n - 1 || avx > 1) ? null : <Bar
                                     key={`i1${j}`}
