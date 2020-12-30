@@ -110,44 +110,7 @@ class ThreeGraphs extends React.Component {
         });
     }
 
-    handleLeave = e => {
-        e.preventDefault();
-        let { state, height, getInt, getDer } = this;
-        let { mousePressed, n, avx } = state;
-        let i1s = [...state.i1s];
-        let i2s = [...state.i2s];
-        let d1s = [...state.d1s];
-        let d2s = [...state.d2s];
-        let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
-        let ys = [...state.ys];
-        // Last boolean means that this only handles when leaving the last stripe.
-        if (!(mousePressed && id === n - 1 && id === ys.length - 1)) return;
-        let y = e.nativeEvent.offsetY - height / 2;
-        ys.push(y);
-
-        if (avx < 2) i1s = getInt(n, ys, state.i1s);
-        if (avx < 1) i2s = getInt(n, i1s,state.i2s);
-        if (avx > 0) d1s = getDer(n, ys, state.d1s);
-        if (avx > 1) {
-            d2s = getDer(n - 1, d1s, state.d2s);
-            d2s = getDer(n, d1s, d2s);
-        }
-        this.setState({ ys, i1s, d1s, i2s, d2s });
-    }
-
-    smooth = (fsOld, n) => {
-        let fsMax = 0;
-        let fs = [...fsOld].slice(0, -1);
-        for (let j = n; j < fs.length - n; j++) {
-            fs[j] = fsOld.slice(j - n, j + n + 1).sort()[n];
-            fsMax = Math.max(fsMax, Math.abs(fs[j]));
-        }
-        fs.push(fsMax)
-        return fs;
-    }
-
     fit = ys => {
-        // let newYs = {...ys};
         let newYs = [];
         let id = 0;
         let [d1s, d2s, i1s, i2s] = [[], [], [], []];
@@ -202,47 +165,8 @@ class ThreeGraphs extends React.Component {
                 i2max = Math.max(i2max, Math.abs(i2));
                 id++;
             }
-            //         // i1            += vecSol[i] * (ids[j] ** (i + 1)) / (i + 1);
-            //         // i2            += vecSol[i] * (ids[j] ** (i + 2)) / (i + 1) / (i + 2);
         }
         return {newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max};
-    }
-
-    getInt = (id, fs, isOld, ii, order) => {
-        let is = [...isOld];
-        let { iiMax, state, height } = this;
-        let { dt, width } = state;
-        let myIi = (ii > 0) ? iiMax: (ii < 0) ? -iiMax : 0;
-        let iy = (id < 1) ? - myIi * height * (width / 2) ** order :
-             is[id - 1] + (fs[id - 1] + fs[id]) * dt / 2;
-        is.splice(id, 0, iy);
-        is[is.length - 1] = Math.max(is[is.length - 1], iy, -iy);
-        return is;
-    }
-
-    getDer = (id, fs, dsOld) => {
-        let ds = [...dsOld];
-        let { n, dt } = this.state;
-        let dy;
-        if (id === 1) {
-            dy = (fs[id] - fs[id - 1]) / dt;
-            ds = [dy, dy, Math.abs(dy)];
-        } else if (id === 2) {
-            dy = (fs[2] - fs[0]) / 2 / dt;
-            ds[0] = 2 * (fs[1] - fs[0])/ dt - dy;
-            ds[1] = dy;
-            ds[2] = Math.max(Math.abs(ds[0]), Math.abs(ds[1]));
-        } else if (id > 2 && id < n) {
-            dy = (fs[id] - fs[id - 2]) / 2 / dt;
-            ds.splice(id - 1, 0, dy);
-            ds[ds.length - 1] = Math.max(ds[ds.length - 1], dy, -dy);
-        } else if (id === n) {
-            dy = (fs[n] - fs[n - 2]) / 2 / dt;
-            ds.splice(n - 1, 0, dy);
-            ds.splice(n, 0, 2 * (fs[n] - fs[n - 1])/ dt - dy);
-            ds[n + 1] = Math.max(ds[n + 1], Math.abs(dy), Math.abs(ds[n]));
-        }
-        return ds;
     }
 
     render() {
