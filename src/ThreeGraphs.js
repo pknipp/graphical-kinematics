@@ -143,7 +143,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, height } = this;
-        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max} = state;
+        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max, mousePressed } = state;
         return  !ss ? null : (
             <>
                 <div>
@@ -251,7 +251,7 @@ class ThreeGraphs extends React.Component {
                                     dt={dt}
                                     handleEnter={handleEnter}
                                 />
-                                {(ys[j] === undefined || ys[j + 1] === undefined) ? null : <Bar
+                                {(ys[j] === undefined || ys[j + 1] === undefined || !mousePressed) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
@@ -259,13 +259,13 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(ys[j + 1] + height / 2 )}
                                     color={this.colors[avx]}
                                 />}
-                                {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined) ? null : <Bar
+                                {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined || mousePressed) ? null : <Bar
                                     key={`newBar${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.newYs[j] + height / 2)}
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
-                                    color={"orange"}
+                                    color={this.colors[avx]}
                                 />}
                                 {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || avx < 1 ? null : <Bar
                                     key={`d1${j}`}
