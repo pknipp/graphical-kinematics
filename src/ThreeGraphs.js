@@ -7,38 +7,30 @@ class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            logN: 2.0,
-            width: 1000,
+            logN: 1.5,
+            widthRough: 1000,
             mousePressed: false,
-            ys: {},
-            d1max: 0,
-            d2max: 0,
-            i1max: 0,
-            i2max: 0,
-            i1s: [0],
-            d1s:[0],
-            i2s: [0],
-            d2s: [0],
             i1i: 0,
             i2i: 0,
-            avx: 0,
-            id: -1,
+            avx: 2,
             showInstructions: true,
+            logSmooth: 0,
         }
         this.height = 500;
+        this.widthRough = 1000;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
-        this.N = 2;
-        this.M = 4;
+        this.M = 2;
     }
 
     componentDidMount() {
         let n = Math.round(10 ** this.state.logN);
+        let N = Math.round(10 ** this.state.logSmooth) - 1;
         let ss = new Array(n + 1).fill(null);
         let ys = {};
-        let dt = Math.round(this.state.width / n);
+        let dt = Math.round(this.widthRough / n);
         let width = n * dt;
-        this.setState({ n, dt, width, ss, ys });
+        this.setState({ n, N, dt, width, ss, ys });
     }
 
     handleLogN = e => {
@@ -50,12 +42,25 @@ class ThreeGraphs extends React.Component {
         this.setState({ logN, n, dt, width, ss });
     }
 
+    handleLogSmooth = e => {
+        let logSmooth = Number(e.target.value);
+        let N = this.setN(logSmooth);
+        this.setState({ logSmooth, N },() => {
+            let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, this.state.n);
+            this.setState({ mousePressed: false, newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
+        })
+        // this.setState({ logN, n, dt, width, ss });
+    }
+
     handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
+    setN = logSmooth => Math.round(10 ** logSmooth - 1);
     handleDown = e => {
         e.preventDefault();
-        this.setState({ mousePressed: true, ys: {} });
+        let logSmooth = 0;
+        let N = this.setN(logSmooth)
+        this.setState({ mousePressed: true, ys: {}, logSmooth, N });
     }
     handleUp   = e => {
         e.preventDefault();
@@ -74,18 +79,17 @@ class ThreeGraphs extends React.Component {
         let ys =  {...state.ys};
         let y3 = e.nativeEvent.offsetY - height / 2;
         ys[id] = y3;
-        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, id);
-        this.setState({ ys,
-            newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max
-        });
+        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(ys, id);
+        this.setState({ ys, newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max });
     }
 
     fit = (ys, n) => {
-        let { state, iiMax, height, M, N } = this;
+        let { state, iiMax, height } = this;
         let { i1i, i2i, width, dt } = state;
-        let newYs = [];
+        let M = this.M + this.state.avx;
+        let N = this.state.N + M - 1;
         let id = 0;
-        let [d1s, d2s, i1s, i2s] = [[], [], [], []];
+        let [newYs, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
         let [d1max, d2max, i1max, i2max] = [0, 0, 0, 0];
 
         let ids = Object.keys(ys);
@@ -142,8 +146,8 @@ class ThreeGraphs extends React.Component {
     }
 
     render() {
-        let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, height } = this;
-        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max, mousePressed } = state;
+        let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, handleLogSmooth, height } = this;
+        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
         return  !ss ? null : (
             <>
                 <div>
@@ -169,7 +173,7 @@ class ThreeGraphs extends React.Component {
                     </ul>
                     <b>Notes</b>    :
                     <ul>
-                        <li>If resolution is too fine or if dragged too quickly the mouse may miss one or more stripes in the DOM, in which case the app interpolates.</li>
+                        <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
                         <li>(Obviously) a derivative is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
                     </ul>
                 </div>}
@@ -189,6 +193,20 @@ class ThreeGraphs extends React.Component {
                             />
                         </span>
                         <span>fine</span>
+                        <div>Smoothing: </div>
+                        <span>none</span>
+                        <span>
+                            <input
+                                type="range"
+                                onChange={handleLogSmooth}
+                                name="logSmooth"
+                                min="0"
+                                max={logN - 0.35}
+                                step="0.05"
+                                value={logSmooth}
+                            />
+                        </span>
+                        <span>much</span>
                     </div>
                     <div>
                         <div>Quantity being mouse-drawn (<i className="red">a</i>, <i className="v">v</i>, or <i className="x">x</i>): </div>
@@ -237,6 +255,9 @@ class ThreeGraphs extends React.Component {
                             />
                         </span>
                         <span>positive</span>
+                    </div>}
+                    {(mousePressed || !state.newYs) ? null : <div>
+                        {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph was missing.`}
                     </div>}
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
