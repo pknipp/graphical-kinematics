@@ -28,8 +28,8 @@ class ThreeGraphs extends React.Component {
         this.height = 500;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
-        this.N = 1;
-        this.M = 3;
+        this.N = 4;
+        this.M = 4;
     }
 
     componentDidMount() {
@@ -152,7 +152,7 @@ class ThreeGraphs extends React.Component {
         // let newYs = {...ys};
         let newYs = [];
         let id = 0;
-        let [d1s, d2s, i1s, i2s] = [{}, {}, {}, {}];
+        let [d1s, d2s, i1s, i2s] = [[], [], [], []];
         let [d1max, d2max, i1max, i2max] = [0, 0, 0, 0];
 
         let ids = Object.keys(ys);
@@ -184,10 +184,18 @@ class ThreeGraphs extends React.Component {
             }
             while (id <= ids[jId] || (jId === ids.length - this.N - 1 && id <= this.state.n)) {
                 let y = 0;
+                let d1= 0;
+                let d2= 0;
                 for (let i = 0; i < this.M; i++) {
                     y += vecSol[i] * id ** i;
+                    if (i > 0) d1 += vecSol[i] * (id ** (i - 1)) * i;
+                    if (i > 1) d2 += vecSol[i] * (id ** (i - 2)) * i * ( i - 1);
                 }
                 newYs[id] = y;
+                d1s[id] = d1;
+                d2s[id] = d2;
+                d1max = Math.max(d1max, Math.abs(d1));
+                d2max = Math.max(d2max, Math.abs(d2));
                 id++;
             }
 
@@ -216,8 +224,8 @@ class ThreeGraphs extends React.Component {
                 // i2max = Math.max(i2max, Math.abs(i2));
             // }
         }
-        return {newYs,
-            // d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max
+        return {newYs, d1s, d1max, d2s, d2max,
+            // i1s, i1max, i2s, i2max
         };
     }
 
@@ -388,14 +396,14 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
                                     color={"orange"}
                                 />}
-                                {/* {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) ? null : <Bar
+                                {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.d1s[j] *  height / 2 / state.d1max + height / 2)}
                                     y1={Math.round(state.d1s[j+1] *  height / 2 / state.d1max + height / 2)}
                                     color={"green"}
-                                />} */}
+                                />}
                                 {(!state.i1s || state.i1s[j] === undefined || state.i1s[j + 1] === undefined) ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
@@ -404,14 +412,14 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(state.i1s[j+1] *  height / 2 / state.i1max + height / 2)}
                                     color={"purple"}
                                 />}
-                                {/* {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) ? null : <Bar
+                                {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.d2s[j] *  height / 2 / state.d2max + height / 2)}
                                     y1={Math.round(state.d2s[j+1] *  height / 2 / state.d2max + height / 2)}
                                     color={"red"}
-                                />} */}
+                                />}
                                 {/* {(!state.i2s || state.i2s[j] === undefined || state.i2s[j + 1] === undefined) ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
