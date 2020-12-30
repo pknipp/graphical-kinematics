@@ -55,62 +55,34 @@ class ThreeGraphs extends React.Component {
     handleToggle = e => this.setState({[e.target.name]: e.target.checked});
     handleDown = e => {
         e.preventDefault();
-        this.setState({ mousePressed: true,
-            ys: {}  ,
-            // new Array(this.state.n + 1).fill(null), ids: [],
-            // i1s: [0], i2s: [0], d1s: [0], d2s: [0]
-        });
+        this.setState({ mousePressed: true, ys: {} });
     }
     handleUp   = e => {
         e.preventDefault();
-        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys);
+        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, this.state.n);
         this.setState({ mousePressed: false,
-        //  d2s: this.smooth(this.state.d2s, 5)
-            newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
+            newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max
+        });
     };
 
     handleEnter = e => {
         e.preventDefault();
-        let { state, height, getInt, getDer } = this;
-        let { mousePressed, i1i, i2i, avx } = state;
+        let { state, height } = this;
+        let { mousePressed } = state;
         if (!mousePressed) return;
-        let id = Number(e.target.id) //+ ((e.target.leave) ? 1 : 0);
+        let id = Number(e.target.id);
         let ys =  {...state.ys};
-        // let ids = [...state.ids];
-        // let i1s = [...state.i1s];
-        // let i2s = [...state.i2s];
-        // let d1s = [...state.d1s];
-        // let d2s = [...state.d2s];
         let y3 = e.nativeEvent.offsetY - height / 2;
-
         ys[id] = y3;
-        // ids.push(id);
-
-        let c1, c2, c3;
-        // let id2 = ys.length - 1;
-        // let id1 = id2 - 1;
-        // if (id2 > 0) {
-        //     c1 = ys[id1] / (id - id1);
-        //     c2 = ys[id2] / (id2 - id);
-        //     c3 = y3 / (id - id1) / (id - id2);
-        // }
-        for (let j = ys.length; j <= id; j++) {
-            // if (j < 2 && id !== j) return;
-            // Use quadratic interpolation unless at first two points
-            // ys.push((j < 2) ? y3 : c1*(j-id2)*(j-id)+c2*(j-id1)*(j-id)+c3*(j-id1)*(j-id2));
-            // following two lines evaluate the function's 1st and 2nd definite integrals
-            // if (avx < 2) i1s = getInt(j, ys, i1s, i1i, 1);
-            // if (avx < 1) i2s = getInt(j, i1s,i2s, i2i, 2);
-            // // following two lines evaluate the function's 1st and 2nd derivatives
-            // if (avx > 0) d1s = getDer(j, ys, d1s);
-            // if (avx > 1) d2s = getDer(j - ((id === 1) ? 0 : 1), d1s, d2s);
-        }
+        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, id);
         this.setState({ ys,
-            // i1s, d1s, i2s, d2s, id
+            newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max
         });
     }
 
-    fit = ys => {
+    fit = (ys, n) => {
+        let { state, iiMax, height, M, N } = this;
+        let { i1i, i2i, width, dt } = state;
         let newYs = [];
         let id = 0;
         let [d1s, d2s, i1s, i2s] = [[], [], [], []];
@@ -118,44 +90,44 @@ class ThreeGraphs extends React.Component {
 
         let ids = Object.keys(ys);
 
-        let i1 = -this.state.i1i * this.iiMax * this.height * this.state.width / 2;
-        let i2 = -this.state.i2i * this.iiMax * this.height * (this.state.width / 2) ** 2;
+        let i1 = -i1i * iiMax * height * width / 2;
+        let i2 = -i2i * iiMax * height * (width / 2) ** 2;
 
-        for (let jId = this.N; jId < ids.length - this.N; jId++) {
-            let someIds = ids.slice(jId - this.N, jId + this.N + 1);
-            let vector = new Array(this.M).fill(0);
+        for (let jId = N; jId < ids.length - N; jId++) {
+            let someIds = ids.slice(jId - N, jId + N + 1);
+            let vector = new Array(M).fill(0);
             let matrix = [];
-            for (let i = 0; i < this.M; i++) {
-                matrix.push(new Array(this.M).fill(0));
+            for (let i = 0; i < M; i++) {
+                matrix.push(new Array(M).fill(0));
             }
             for (const id2 of someIds) {
-                for (let i = 0; i < this.M; i++) {
+                for (let i = 0; i < M; i++) {
                     vector[i] += ys[id2] * id2 ** i;
-                    for (let j = 0; j < this.M; j++) {
+                    for (let j = 0; j < M; j++) {
                         matrix[i][j] += id2 ** (i + j);
                     }
                 }
             }
             const matrixInv = matrixInverse(matrix);
-            const vecSol = new Array(this.M).fill(0);
-            for (let i = 0; i < this.M; i++) {
-                for (let j = 0; j < this.M; j++) {
+            const vecSol = new Array(M).fill(0);
+            for (let i = 0; i < M; i++) {
+                for (let j = 0; j < M; j++) {
                     vecSol[i] += matrixInv[i][j] * vector[j];
                 }
             }
-            while (id <= ids[jId] || (jId === ids.length - this.N - 1 && id <= this.state.n)) {
+            while (id <= ids[jId] || (jId === ids.length - N - 1 && id <= n)) {
                 let y = 0;
                 let d1= 0;
                 let d2= 0;
                 i1s[id] = i1;
                 i2s[id] = i2;
-                for (let i = 0; i < this.M; i++) {
+                for (let i = 0; i < M; i++) {
                     y += vecSol[i] * id ** i;
                     if (i > 0) d1 += vecSol[i] * (id ** (i - 1)) * i;
                     if (i > 1) d2 += vecSol[i] * (id ** (i - 2)) * i * ( i - 1);
                 }
-                i1 += y * this.state.dt;
-                i2 += i1* this.state.dt;
+                i1 += y * dt;
+                i2 += i1* dt;
                 newYs[id] = y;
                 d1s[id] = d1;
                 d2s[id] = d2;
@@ -170,8 +142,8 @@ class ThreeGraphs extends React.Component {
     }
 
     render() {
-        let { state, handleDown, handleUp, handleEnter, handleLeave, handleLogN, handleInput, height } = this;
-        let {n, ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max} = state;
+        let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, height } = this;
+        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max} = state;
         return  !ss ? null : (
             <>
                 <div>
@@ -295,37 +267,36 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
                                     color={"orange"}
                                 />}
-                                {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) || avx < 1 ? null : <Bar
+                                {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || avx < 1 ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.d1s[j] *  height / 2 / state.d1max + height / 2)}
-                                    y1={Math.round(state.d1s[j+1] *  height / 2 / state.d1max + height / 2)}
-                                    color={"green"}
+                                    y={Math.round(d1s[j] *  height / 2 / d1max + height / 2)}
+                                    y1={Math.round(d1s[j+1] *  height / 2 / d1max + height / 2)}
                                     color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {(!state.i1s || state.i1s[j] === undefined || state.i1s[j + 1] === undefined) || avx > 1 ? null : <Bar
+                                {(!i1s || i1s[j] === undefined || i1s[j + 1] === undefined) || avx > 1 ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.i1s[j] *  height / 2 / state.i1max + height / 2)}
-                                    y1={Math.round(state.i1s[j+1] *  height / 2 / state.i1max + height / 2)}
+                                    y={Math.round(i1s[j] *  height / 2 / i1max + height / 2)}
+                                    y1={Math.round(i1s[j+1] *  height / 2 / i1max + height / 2)}
                                     color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) || avx < 2 ? null : <Bar
+                                {(!d2s || d2s[j] === undefined || d2s[j + 1] === undefined) || avx < 2 ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.d2s[j] *  height / 2 / state.d2max + height / 2)}
-                                    y1={Math.round(state.d2s[j+1] *  height / 2 / state.d2max + height / 2)}
+                                    y={Math.round(d2s[j] *  height / 2 / d2max + height / 2)}
+                                    y1={Math.round(d2s[j+1] *  height / 2 / d2max + height / 2)}
                                     color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {(!state.i2s || state.i2s[j] === undefined || state.i2s[j + 1] === undefined) || avx > 0 ? null : <Bar
+                                {(!i2s || i2s[j] === undefined || i2s[j + 1] === undefined) || avx > 0 ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.i2s[j] *  height / 2 / state.i2max + height / 2)}
-                                    y1={Math.round(state.i2s[j+1] *  height / 2 / state.i2max + height / 2)}
+                                    y={Math.round(i2s[j] *  height / 2 / i2max + height / 2)}
+                                    y1={Math.round(i2s[j+1] *  height / 2 / i2max + height / 2)}
                                     color={this.colors[(avx + 2) % 3]}
                                 />}
                             </>
