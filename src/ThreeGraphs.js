@@ -348,24 +348,20 @@ class ThreeGraphs extends React.Component {
                     <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
                         {ss.map((s, j) => (
                             <>
-                                {/* {!(j < n) ? null : */}
                                 <Strip
                                     key={`strip${j}`}
                                     j={j}
                                     height={height}
                                     dt={dt}
                                     handleEnter={handleEnter}
-                                    // handleLeave={handleLeave}
                                 />
-                                {/* {(j > ys.length - 2 || j > n - 1) ? null : <Bar */}
                                 {(ys[j] === undefined || ys[j + 1] === undefined) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(ys[j] + height / 2)}
                                     y1={Math.round(ys[j + 1] + height / 2 )}
-                                    color={"blue"}
-                                    // color={this.colors[avx]}
+                                    color={this.colors[avx]}
                                 />}
                                 {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined) ? null : <Bar
                                     key={`newBar${j}`}
@@ -375,86 +371,39 @@ class ThreeGraphs extends React.Component {
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
                                     color={"orange"}
                                 />}
-                                {/* {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) ? null : <Bar
+                                {(!state.d1s || state.d1s[j] === undefined || state.d1s[j + 1] === undefined) || avx < 1 ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.d1s[j] *  height / 2 / state.d1max + height / 2)}
                                     y1={Math.round(state.d1s[j+1] *  height / 2 / state.d1max + height / 2)}
                                     color={"green"}
-                                />} */}
-                                {(!state.i1s || state.i1s[j] === undefined || state.i1s[j + 1] === undefined) ? null : <Bar
+                                    color={this.colors[(avx + 2) % 3]}
+                                />}
+                                {(!state.i1s || state.i1s[j] === undefined || state.i1s[j + 1] === undefined) || avx > 1 ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.i1s[j] *  height / 2 / state.i1max + height / 2)}
                                     y1={Math.round(state.i1s[j+1] *  height / 2 / state.i1max + height / 2)}
-                                    color={"purple"}
+                                    color={this.colors[(avx + 1) % 3]}
                                 />}
-                                {/* {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) ? null : <Bar
+                                {(!state.d2s || state.d2s[j] === undefined || state.d2s[j + 1] === undefined) || avx < 2 ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.d2s[j] *  height / 2 / state.d2max + height / 2)}
                                     y1={Math.round(state.d2s[j+1] *  height / 2 / state.d2max + height / 2)}
-                                    color={"red"}
-                                />} */}
-                                {(!state.i2s || state.i2s[j] === undefined || state.i2s[j + 1] === undefined) ? null : <Bar
+                                    color={this.colors[(avx + 1) % 3]}
+                                />}
+                                {(!state.i2s || state.i2s[j] === undefined || state.i2s[j + 1] === undefined) || avx > 0 ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(state.i2s[j] *  height / 2 / state.i2max + height / 2)}
                                     y1={Math.round(state.i2s[j+1] *  height / 2 / state.i2max + height / 2)}
-                                    color={"gray"}
+                                    color={this.colors[(avx + 2) % 3]}
                                 />}
-                                {/* {(j > ys.length - 2 || j > n - 1 || avx > 1) ? null : <Bar
-                                    key={`i1${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(height * (i1s[j] / i1s[i1s.length - 1] + 1) / 2)}
-                                    y1={Math.round(height * (i1s[j + 1] / i1s[i1s.length - 1] + 1) / 2 )}
-                                    color={this.colors[(avx + 1) % 3]}
-                                />} */}
-                                {/* {(j > ys.length - 2 || j > n - 1 || avx > 0) ? null : <Bar
-                                    key={`i2${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(i2s[j] * height/2/i2s[i2s.length - 1] + height / 2)}
-                                    y1={Math.round(i2s[j + 1] * height/2/i2s[i2s.length - 1] + height / 2 )}
-                                    color={this.colors[(avx + 2) % 3]}
-                                />} */}
-                                {/* {(j > ys.length - 3 || j > n - 1 || avx < 1) ? null : <Bar
-                                    key={`d1${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d1s[j] *  height/2/d1s[d1s.length-1]+height/2)}
-                                    y1={Math.round(d1s[j+1]*height/2/d1s[d1s.length-1]+height/2)}
-                                    color={this.colors[(avx + 2) % 3]}
-                                />} */}
-                                {/* {(j !== n - 1 || avx < 1) ? null : <Bar
-                                    key={`d1${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d1s[j] * height/2/d1s[d1s.length - 1] + height / 2)}
-                                    y1={Math.round(d1s[j + 1]*height/2/d1s[d1s.length-1] + height / 2 )}
-                                    color={this.colors[(avx + 2) % 3]}
-                                />} */}
-                                {/* {((j > ys.length - 4) || j > n - 1 || avx < 2) ? null : <Bar
-                                    key={`d2${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
-                                    y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
-                                    color={this.colors[(avx + 1) % 3]}
-                                />} */}
-                                {/* {(!(j === n - 2 || j === n - 1) || avx < 2) ? null : <Bar
-                                    key={`d2${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d2s[j] * height/2/d2s[d2s.length - 1] + height / 2)}
-                                    y1={Math.round(d2s[j + 1]*height/2/d2s[d2s.length-1] + height / 2 )}
-                                    color={this.colors[(avx + 1) % 3]}
-                                />} */}
                             </>
                         ))}
                     </div>
