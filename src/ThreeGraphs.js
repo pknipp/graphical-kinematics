@@ -8,7 +8,7 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 2.0,
-            width: 400,
+            width: 1000,
             mousePressed: false,
             ys: {},
             d1max: 0,
@@ -21,14 +21,14 @@ class ThreeGraphs extends React.Component {
             d2s: [0],
             i1i: 0,
             i2i: 0,
-            avx: 2,
+            avx: 1,
             id: -1,
             showInstructions: true,
         }
         this.height = 500;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
-        this.N = 4;
+        this.N = 2;
         this.M = 4;
     }
 
@@ -38,9 +38,7 @@ class ThreeGraphs extends React.Component {
         let ys = {};
         let dt = Math.round(this.state.width / n);
         let width = n * dt;
-        this.setState({ n, dt, width, ss,
-            ys
-        });
+        this.setState({ n, dt, width, ss, ys });
     }
 
     handleLogN = e => {
@@ -157,7 +155,7 @@ class ThreeGraphs extends React.Component {
 
         let ids = Object.keys(ys);
 
-        // let i1 = 0 //this.state.i1i * this.iiMax * this.height * this.state.width / 2;
+        let i1 = -this.state.i1i * this.iiMax * this.height * this.state.width / 2;
         // let i2 = 0;
 
         for (let jId = this.N; jId < ids.length - this.N; jId++) {
@@ -186,46 +184,26 @@ class ThreeGraphs extends React.Component {
                 let y = 0;
                 let d1= 0;
                 let d2= 0;
+                i1s[id] = i1;
                 for (let i = 0; i < this.M; i++) {
                     y += vecSol[i] * id ** i;
                     if (i > 0) d1 += vecSol[i] * (id ** (i - 1)) * i;
                     if (i > 1) d2 += vecSol[i] * (id ** (i - 2)) * i * ( i - 1);
                 }
+                i1 += y * this.state.dt;
                 newYs[id] = y;
                 d1s[id] = d1;
                 d2s[id] = d2;
                 d1max = Math.max(d1max, Math.abs(d1));
                 d2max = Math.max(d2max, Math.abs(d2));
+                i1max = Math.max(i1max, Math.abs(i1));
                 id++;
             }
-
-
-            // let jMin = (jId === this.N) ? 0 : jId;
-            // let jMax = (jId === ids.length - this.N - 1) ? ids.length - 1 : jId;
-            // for (let j = jMin; j <= jMax; j++) {
-            //     let y = 0;
-            //     // let d1= 0;
-            //     // let d2= 0;
-            //     for (let i = 0; i < this.M; i++) {
-            //         y += vecSol[i] * ids[j] ** i;
-            //         // if (i > 0) d1 += vecSol[i] * (ids[j] ** (i - 1)) * i;
-            //         // if (i > 1) d2 += vecSol[i] * (ids[j] ** (i - 2)) * i * ( i - 1);
             //         // i1            += vecSol[i] * (ids[j] ** (i + 1)) / (i + 1);
             //         // i2            += vecSol[i] * (ids[j] ** (i + 2)) / (i + 1) / (i + 2);
-            //     }
-            //     newYs[ids[j]] = y;
-                // d1s[ids[j]] = d1;
-                // d2s[ids[j]] = d2;
-                // i1s[ids[j]] = i1;
-                // i2s[ids[j]] = i2;
-                // d1max = Math.max(d1max, Math.abs(d1));
-                // d2max = Math.max(d2max, Math.abs(d2));
-                // i1max = Math.max(i1max, Math.abs(i1));
-                // i2max = Math.max(i2max, Math.abs(i2));
-            // }
         }
-        return {newYs, d1s, d1max, d2s, d2max,
-            // i1s, i1max, i2s, i2max
+        return {newYs, d1s, d1max, d2s, d2max, i1s, i1max,
+            // i2s, i2max
         };
     }
 
