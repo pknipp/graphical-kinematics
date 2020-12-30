@@ -12,7 +12,10 @@
   position: relative;
   justify-content: center;
   align-items: flex-end;
-  border: 1px solid;
+  border-left: 50px solid gray;
+  border-right:50px solid gray;
+  border-top: 1px solid gray;
+  border-bottom: 1px solid gray;
 }
 
 .strip {
@@ -64,10 +67,13 @@ div.strips-container input {
   justify-content: flex-start;
 }
 
-.sliders>* {
-  padding: 0 20px;
-}
+.sliders>* {padding: 0 20px}
 
 .a {color: red}
 .v {color: green}
 .x {color: blue}
+
+.bothSides {
+  display: flex;
+  justify-content: space-around;
+}
