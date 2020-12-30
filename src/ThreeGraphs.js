@@ -8,16 +8,15 @@ class ThreeGraphs extends React.Component {
         super(props);
         this.state = {
             logN: 1.5,
-            widthRough: 1000,
             mousePressed: false,
             i1i: 0,
             i2i: 0,
-            avx: 2,
+            avx: 1,
             showInstructions: true,
             logSmooth: 0,
         }
         this.height = 500;
-        this.widthRough = 1000;
+        this.widthRough = 800;
         this.iiMax = 0.3;
         this.colors = ["red", "green", "blue"];
         this.M = 2;
@@ -36,10 +35,13 @@ class ThreeGraphs extends React.Component {
     handleLogN = e => {
         let logN = Number(e.target.value);
         let n = Math.round(10 ** logN);
-        let dt = Math.round(this.state.width / n);
+        // let dt = Math.round(this.state.width / n);
+        let dt = this.state.width / n;
         let width = n * dt;
         let ss = new Array(n + 1).fill(null);
-        this.setState({ logN, n, dt, width, ss });
+        let [newYs, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
+        let [d1max, d2max, i1max, i2max] = new Array(4).fill(0);
+        this.setState({ logN, n, dt, width, ss, ys: {}, newYs, d1s, d2s, i1s, i2s });
     }
 
     handleLogSmooth = e => {
@@ -168,97 +170,129 @@ class ThreeGraphs extends React.Component {
                         <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
                         <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: the <span className="a">acceleration (<i>a</i>)</span>, the <span className="v">velocity (<i>v</i>)</span>, or the <span className="x">position (<i>x</i>)</span>.</li>
                         <li>If needed, use the remaining slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="v">v</i> and/or <i className="x">x</i>).</li>
-                        <li> Click your mouse at a spot to the left of the rectangle and drag slowly to the right in order to create the graph for your chosen quantity.  (The dotted line represents zero.)</li>
+                        <li> Click in the lefthand gray rectangle and drag slowly to the other rectangle in order to create a graph for your chosen quantity.  (The dotted line represents zero.)</li>
                         <li>  The colors for the graphs of <i className="a">a</i>, <i className="v">v</i>, and <i className="x">x</i> will respectively be <span className="a">red</span>, <span className="v">green</span>, and <span className="x">blue.</span></li>
                     </ul>
                     <b>Notes</b>    :
                     <ul>
                         <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
-                        <li>(Obviously) a derivative is rougher than the function itself.  (ie, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>.) There are various ways that I may "smooth" this.</li>
+                        <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>. In this app there is a means by which you may artificially smooth the graphs.</li>
                     </ul>
                 </div>}
+                <div className="bothSides">
                 <div className="sliders">
-                    <div>
-                        <div>Spatial resolution: </div>
-                        <span>coarse</span>
-                        <span>
-                            <input
-                                type="range"
-                                onChange={handleLogN}
-                                name="logN"
-                                min="0.5"
-                                max="3"
-                                step="0.25"
-                                value={logN}
-                            />
-                        </span>
-                        <span>fine</span>
-                        <div>Smoothing: </div>
-                        <span>none</span>
-                        <span>
-                            <input
-                                type="range"
-                                onChange={handleLogSmooth}
-                                name="logSmooth"
-                                min="0"
-                                max={logN - 0.35}
-                                step="0.05"
-                                value={logSmooth}
-                            />
-                        </span>
-                        <span>much</span>
+                        <div>
+                        {(mousePressed || !state.newYs) ? null : <div>
+                            {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph's points were missing.`}
+                        </div>}
+                        <table>
+                            <thead><tr><th colSpan="3">Controls</th></tr></thead>
+                            <tbody>
+                                <tr><td colSpan="3">Spatial resolution: </td></tr>
+                                <tr>
+                                    <td align="right">coarse</td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            onChange={handleLogN}
+                                            name="logN"
+                                            min="0.5"
+                                            max="3"
+                                            step="0.25"
+                                            value={logN}
+                                        />
+                                    </td>
+                                    <td>fine</td>
+                                </tr>
+                                <tr><td colSpan="3">Quantity being drawn:</td></tr>
+                                <tr>
+                                    <td align="right"><i className="a">a</i></td>
+                                    <td>
+                                        <input
+                                            type="range"
+                                            onChange={handleInput}
+                                            name="avx"
+                                            min="0"
+                                            max="2"
+                                            step="1"
+                                            value={avx}
+                                        />
+                                    </td>
+                                    <td><i className="x">x</i></td>
+                                </tr>
+                                <tr><td colSpan="3" align="center"><i className="v">v</i></td></tr>
+
+                                {(avx > 1) ? null :
+                                    <>
+                                        <tr>
+                                            <td colSpan="3">
+                                                Initial value of {(avx === 0) ? "velocity" : "position"}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right">negative</td>
+                                            <td>
+                                                <input
+                                                    type="range"
+                                                    onChange={handleInput}
+                                                    name="i1i"
+                                                    min="-1"
+                                                    max="1"
+                                                    step="1"
+                                                    value={i1i}
+                                                />
+                                            </td>
+                                            <td>positive</td>
+                                        </tr>
+                                        <tr><td colSpan="3" align="center">0</td></tr>
+                                    </>
+                                }
+                                {(avx > 0) ? null :
+                                    <>
+                                        <tr>
+                                            <td colSpan="3">Initial value of position <i className="x">x</i>: </td>
+                                        </tr>
+                                        <tr>
+                                            <td align="right">negative</td>
+                                            <td>
+                                                <input
+                                                    type="range"
+                                                    onChange={handleInput}
+                                                    name="i2i"
+                                                    min="-1"
+                                                    max="1"
+                                                    step="1"
+                                                    value={i2i}
+                                                />
+                                            </td>
+                                            <td>positive</td>
+                                        </tr>
+                                        <tr><td colSpan="3" align="center">0</td></tr>
+                                    </>
+                                }
+                                {(mousePressed || !state.newYs) ? null :
+                                    <>
+                                        <tr><td colSpan="3">Smoothing: </td></tr>
+                                        <tr>
+                                            <td align="right">none</td>
+                                            <td>
+                                                <input
+                                                    type="range"
+                                                    onChange={handleLogSmooth}
+                                                    name="logSmooth"
+                                                    min="0"
+                                                    max={logN - 0.35}
+                                                    step="0.05"
+                                                    value={logSmooth}
+                                                />
+                                            </td>
+                                            <td>much</td>
+                                        </tr>
+                                    </>
+                                }
+                            </tbody>
+                        </table>
                     </div>
-                    <div>
-                        <div>Quantity being mouse-drawn (<i className="red">a</i>, <i className="v">v</i>, or <i className="x">x</i>): </div>
-                        <span><i className="a">a</i></span>
-                        <span>
-                            <input
-                                type="range"
-                                onChange={handleInput}
-                                name="avx"
-                                min="0"
-                                max="2"
-                                step="1"
-                                value={avx}
-                            />
-                        </span>
-                        <span><i className="x">x</i></span>
-                    </div>
-                    {(avx > 1) ? null : <div>
-                        <div>{(avx === 0) ? "velocity" : "position"}'s initial value (-, 0, or +): </div>
-                        <span>negative</span>
-                        <span>
-                            <input
-                                type="range"
-                                onChange={handleInput}
-                                name="i1i"
-                                min="-1"
-                                max="1"
-                                step="1"
-                                value={i1i}
-                            />
-                        </span>
-                        <span>positive</span>
-                    </div>}
-                    {(avx > 0) ? null : <div>
-                        <div>position's initial value (-, 0, or +): </div>
-                        <span>negative</span>
-                        <span>
-                            <input
-                                type="range"
-                                onChange={handleInput}
-                                name="i2i"
-                                min="-1"
-                                max="1"
-                                step="1"
-                                value={i2i}
-                            />
-                        </span>
-                        <span>positive</span>
-                    </div>}
-                    {(mousePressed || !state.newYs) ? null : <div>
-                        {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph was missing.`}
-                    </div>}
                 </div>
                 <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
                     <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
@@ -323,6 +357,7 @@ class ThreeGraphs extends React.Component {
                             </>
                         ))}
                     </div>
+                </div>
                 </div>
             </>
         )
