@@ -11,11 +11,11 @@ class ThreeGraphs extends React.Component {
             mousePressed: false,
             i1i: 0,
             i2i: 0,
-            xva: 1,
+            xva: 2,
             showInstructions: true,
             logSmooth: 0,
         }
-        this.height = 500;
+        this.height = 600;
         this.widthRough = 800;
         this.iiMax = 0.3;
         this.colors = ["blue", "green", "red"];
@@ -58,7 +58,10 @@ class ThreeGraphs extends React.Component {
 
     handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
     handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
-    handleToggle = e => this.setState({[e.target.name]: e.target.checked});
+    toggle = _ => {
+        let showInstructions = !this.state.showInstructions;
+        this.setState({ showInstructions });
+    }
     setN = logSmooth => Math.round(10 ** logSmooth - 1);
     handleDown = e => {
         e.preventDefault();
@@ -154,18 +157,7 @@ class ThreeGraphs extends React.Component {
         let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, xva, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
         return  !ss ? null : (
             <>
-                <div>
-                    <span>Show instructions</span>
-                    <span>
-                        <input
-                            type="checkbox"
-                            onChange={this.handleCheckbox}
-                            name="showInstructions"
-                            checked={this.state.showInstructions}
-                        >
-                        </input>
-                    </span>
-                </div>
+                <button onClick={this.toggle}>{this.state.showInstructions ? "HIDE" : "SHOW"}</button> instructions
                 {!this.state.showInstructions ? null : <div>
                     <p align="center"><h1>Graphical Kinematics</h1></p>
 
@@ -216,7 +208,7 @@ class ThreeGraphs extends React.Component {
                                 <tr><td colSpan="3">Quantity being drawn:</td></tr>
                                 <tr>
                                     <td align="right"><i className="x">x</i></td>
-                                    <td>
+                                    <td align="center">
                                         <input
                                             type="range"
                                             onChange={handleInput}
@@ -225,12 +217,10 @@ class ThreeGraphs extends React.Component {
                                             max="2"
                                             step="1"
                                             value={xva}
-                                        />
+                                        /><br/><i className="v">v</i>
                                     </td>
                                     <td><i className="a">a</i></td>
                                 </tr>
-                                <tr><td colSpan="3" align="center"><i className="v">v</i></td></tr>
-
                                 {(xva < 1) ? null :
                                     <>
                                         <tr>
@@ -240,7 +230,7 @@ class ThreeGraphs extends React.Component {
                                         </tr>
                                         <tr>
                                             <td align="right">negative</td>
-                                            <td>
+                                            <td align="center">
                                                 <input
                                                     type="range"
                                                     onChange={handleInput}
@@ -249,11 +239,10 @@ class ThreeGraphs extends React.Component {
                                                     max="1"
                                                     step="1"
                                                     value={i1i}
-                                                />
+                                                /><br/>0
                                             </td>
                                             <td>positive</td>
                                         </tr>
-                                        <tr><td colSpan="3" align="center">0</td></tr>
                                     </>
                                 }
                                 {(xva < 2) ? null :
@@ -263,7 +252,7 @@ class ThreeGraphs extends React.Component {
                                         </tr>
                                         <tr>
                                             <td align="right">negative</td>
-                                            <td>
+                                            <td align="center">
                                                 <input
                                                     type="range"
                                                     onChange={handleInput}
@@ -272,11 +261,10 @@ class ThreeGraphs extends React.Component {
                                                     max="1"
                                                     step="1"
                                                     value={i2i}
-                                                />
+                                                /><br/>0
                                             </td>
                                             <td>positive</td>
                                         </tr>
-                                        <tr><td colSpan="3" align="center">0</td></tr>
                                     </>
                                 }
                                 {(mousePressed || !state.newYs) ? null :
