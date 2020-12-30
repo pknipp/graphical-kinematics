@@ -11,15 +11,17 @@ class ThreeGraphs extends React.Component {
             mousePressed: false,
             i1i: 0,
             i2i: 0,
-            avx: 1,
+            xva: 1,
             showInstructions: true,
             logSmooth: 0,
         }
         this.height = 500;
         this.widthRough = 800;
         this.iiMax = 0.3;
-        this.colors = ["red", "green", "blue"];
-        this.M = 2;
+        this.colors = ["blue", "green", "red"];
+        // Setting this.M = 4 means that position, velocity, and accelerations will be fit cubically,
+        // quadratically, and linearly, respectively.
+        this.M = 4;
     }
 
     componentDidMount() {
@@ -88,7 +90,7 @@ class ThreeGraphs extends React.Component {
     fit = (ys, n) => {
         let { state, iiMax, height } = this;
         let { i1i, i2i, width, dt } = state;
-        let M = this.M + this.state.avx;
+        let M = this.M - this.state.xva;
         let N = this.state.N + M - 1;
         let id = 0;
         let [newYs, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
@@ -149,7 +151,7 @@ class ThreeGraphs extends React.Component {
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, handleLogSmooth, height } = this;
-        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, avx, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
+        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, xva, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
         return  !ss ? null : (
             <>
                 <div>
@@ -165,22 +167,28 @@ class ThreeGraphs extends React.Component {
                     </span>
                 </div>
                 {!this.state.showInstructions ? null : <div>
+                    <p align="center"><h1>Graphical Kinematics</h1></p>
+
+                    "Kinematics" is the study of the relationship between the position <span className="x"><i>x</i></span>, velocity <span className="v"><i>v</i></span>, and acceleration <span className="a"><i>a</i></span> of a moving particle.  This app allows you to do so <i>graphically</i> for a particle which moves in one dimension.
+                    <br/><br/>
                     <b>Instructions:</b>
                     <ul>
+                        <li>  The colors for the graphs of <i className="x">x</i>, <i className="v">v</i>, and <i className="a">a</i> will respectively be <span className="x">blue</span>, <span className="v">green</span>, and <span className="a">red.</span></li>
                         <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
-                        <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: the <span className="a">acceleration (<i>a</i>)</span>, the <span className="v">velocity (<i>v</i>)</span>, or the <span className="x">position (<i>x</i>)</span>.</li>
-                        <li>If needed, use the remaining slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="v">v</i> and/or <i className="x">x</i>).</li>
+                        <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: <span className="x"><i>x</i></span>, <span className="v"><i>v</i></span>, or <span className="a"><i>a</i></span>.</li>
+                        <li>If needed, use the next one or two slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="x">x</i> and/or <i className="v">v</i>).</li>
                         <li> Click in the lefthand gray rectangle and drag slowly to the other rectangle in order to create a graph for your chosen quantity.  (The dotted line represents zero.)</li>
-                        <li>  The colors for the graphs of <i className="a">a</i>, <i className="v">v</i>, and <i className="x">x</i> will respectively be <span className="a">red</span>, <span className="v">green</span>, and <span className="x">blue.</span></li>
+                        <li> After creating your graphs a final slider will materialize which you may use to "smooth" your graphs.</li>
+
                     </ul>
                     <b>Notes</b>    :
                     <ul>
                         <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
-                        <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="a">a</i> is rougher than <i className="v">v</i> which is rougher than <i className="x">x</i>. In this app you smooth the graphs afterwards.</li>
+                        <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="x">x</i> is smoother than <i className="v">v</i> which is smoother than <i className="a">a</i>. In this app you may smooth the graphs afterwards if you choose.</li>
                     </ul>
                 </div>}
                 {(mousePressed || !state.newYs) ? null : <p align="center"><i>
-                    {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph's points were missing.`}
+                    {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph's points were missing.  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
                 </i></p>}
                 <div className="bothSides">
                 <div className="sliders">
@@ -207,27 +215,27 @@ class ThreeGraphs extends React.Component {
                                 </tr>
                                 <tr><td colSpan="3">Quantity being drawn:</td></tr>
                                 <tr>
-                                    <td align="right"><i className="a">a</i></td>
+                                    <td align="right"><i className="x">x</i></td>
                                     <td>
                                         <input
                                             type="range"
                                             onChange={handleInput}
-                                            name="avx"
+                                            name="xva"
                                             min="0"
                                             max="2"
                                             step="1"
-                                            value={avx}
+                                            value={xva}
                                         />
                                     </td>
-                                    <td><i className="x">x</i></td>
+                                    <td><i className="a">a</i></td>
                                 </tr>
                                 <tr><td colSpan="3" align="center"><i className="v">v</i></td></tr>
 
-                                {(avx > 1) ? null :
+                                {(xva < 1) ? null :
                                     <>
                                         <tr>
                                             <td colSpan="3">
-                                                Initial value of {(avx === 0) ? "velocity" : "position"}
+                                                Initial value of {(xva === 2) ? "velocity" : "position"}:
                                             </td>
                                         </tr>
                                         <tr>
@@ -248,7 +256,7 @@ class ThreeGraphs extends React.Component {
                                         <tr><td colSpan="3" align="center">0</td></tr>
                                     </>
                                 }
-                                {(avx > 0) ? null :
+                                {(xva < 2) ? null :
                                     <>
                                         <tr>
                                             <td colSpan="3">Initial value of position <i className="x">x</i>: </td>
@@ -313,7 +321,7 @@ class ThreeGraphs extends React.Component {
                                     dt={dt}
                                     y={Math.round(ys[j] + height / 2)}
                                     y1={Math.round(ys[j + 1] + height / 2 )}
-                                    color={this.colors[avx]}
+                                    color={this.colors[xva]}
                                 />}
                                 {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined || mousePressed) ? null : <Bar
                                     key={`newBar${j}`}
@@ -321,39 +329,39 @@ class ThreeGraphs extends React.Component {
                                     dt={dt}
                                     y={Math.round(state.newYs[j] + height / 2)}
                                     y1={Math.round(state.newYs[j + 1] + height / 2 )}
-                                    color={this.colors[avx]}
+                                    color={this.colors[xva]}
                                 />}
-                                {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || avx < 1 ? null : <Bar
+                                {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || xva > 1 ? null : <Bar
                                     key={`d1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d1s[j] *  height / 2 / d1max + height / 2)}
                                     y1={Math.round(d1s[j+1] *  height / 2 / d1max + height / 2)}
-                                    color={this.colors[(avx + 2) % 3]}
+                                    color={this.colors[(xva + 1) % 3]}
                                 />}
-                                {(!i1s || i1s[j] === undefined || i1s[j + 1] === undefined) || avx > 1 ? null : <Bar
+                                {(!i1s || i1s[j] === undefined || i1s[j + 1] === undefined) || xva < 1 ? null : <Bar
                                     key={`i1${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(i1s[j] *  height / 2 / i1max + height / 2)}
                                     y1={Math.round(i1s[j+1] *  height / 2 / i1max + height / 2)}
-                                    color={this.colors[(avx + 1) % 3]}
+                                    color={this.colors[(xva + 2) % 3]}
                                 />}
-                                {(!d2s || d2s[j] === undefined || d2s[j + 1] === undefined) || avx < 2 ? null : <Bar
+                                {(!d2s || d2s[j] === undefined || d2s[j + 1] === undefined) || xva > 0 ? null : <Bar
                                     key={`d2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(d2s[j] *  height / 2 / d2max + height / 2)}
                                     y1={Math.round(d2s[j+1] *  height / 2 / d2max + height / 2)}
-                                    color={this.colors[(avx + 1) % 3]}
+                                    color={this.colors[(xva + 2) % 3]}
                                 />}
-                                {(!i2s || i2s[j] === undefined || i2s[j + 1] === undefined) || avx > 0 ? null : <Bar
+                                {(!i2s || i2s[j] === undefined || i2s[j + 1] === undefined) || xva < 2 ? null : <Bar
                                     key={`i2${j}`}
                                     j={j}
                                     dt={dt}
                                     y={Math.round(i2s[j] *  height / 2 / i2max + height / 2)}
                                     y1={Math.round(i2s[j+1] *  height / 2 / i2max + height / 2)}
-                                    color={this.colors[(avx + 2) % 3]}
+                                    color={this.colors[(xva + 1) % 3]}
                                 />}
                             </>
                         ))}
