@@ -157,30 +157,39 @@ class ThreeGraphs extends React.Component {
         let { ss, rawYs, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, xva, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
         return  !ss ? null : (
             <>
-                <button onClick={this.toggle}>{this.state.showInstructions ? "HIDE" : "SHOW"}</button> instructions
+                <button onClick={this.toggle}>{this.state.showInstructions ? "HIDE" : "SHOW"}</button> explanation
                 {!this.state.showInstructions ? null : <div>
                     <p align="center"><h1>Graphical Kinematics</h1></p>
 
-                    "Kinematics" is the study of the relationship between the position <span className="x"><i>x</i></span>, velocity <span className="v"><i>v</i></span>, and acceleration <span className="a"><i>a</i></span> of a moving particle.  This app allows you to do so <i>graphically</i> for a particle which moves in one dimension.
+                    "Kinematics" is the study of the relationship between the position <span className="x"><i>x</i></span>, velocity <span className="v"><i>v</i></span>, and acceleration <span className="a"><i>a</i></span> of a moving particle.  This app allows you to explore this <i>graphically</i> for a particle which moves in one dimension.
                     <br/><br/>
+                    <b>Basics:</b>
+                    <ul>
+                        <li> In the graphs below, the kinematic quantities (<i>x</i>, <i>v</i>, and <i>a</i>) will be plotted along the vertical axis, while the time <i>t</i> will be along the horizontal axis.
+                        The curves for <i className="x">x</i>, <i className="v">v</i>, and <i className="a">a</i> will respectively be <span className="x">blue</span>, <span className="v">green</span>, and <span className="a">red.</span>
+                        </li>
+                        <li> <em>Slope</em> equals <em>rise</em> divided by <em>run</em>, ie the steepness of a graph. An "uphill" graph has a positive slope, a "downhill" graph has a negative slope, and a horizontal line has zero slope.</li>
+                        <li> The slope of the <i className="x">x</i>-graph (at a particular moment <i>t</i>) equals the value of <i className="v">v</i> at that moment.</li>
+                        <li> The slope of the <i className="v">v</i>-graph equals the value of <i className="a">a</i> at that moment.</li>
+                    </ul>
+
                     <b>Instructions:</b>
                     <ul>
-                        <li>  The colors for the graphs of <i className="x">x</i>, <i className="v">v</i>, and <i className="a">a</i> will respectively be <span className="x">blue</span>, <span className="v">green</span>, and <span className="a">red.</span></li>
                         <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
                         <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: <span className="x"><i>x</i></span>, <span className="v"><i>v</i></span>, or <span className="a"><i>a</i></span>.  (The other two functions will be calculated and graphed.)</li>
                         <li>If needed, use the next one or two slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="x">x</i> and/or <i className="v">v</i>).</li>
                         <li> Click in the lefthand gray rectangle and drag slowly to the other rectangle in order to create a graph for your chosen quantity.  The dotted line represents zero.</li>
                         <li> After creating your graphs a final slider will materialize which you may use to "smooth" your graphs.</li>
-
+                        <li> Clicking in the graph or in either gray rectangle initializes your graphs.</li>
                     </ul>
-                    <b>Notes</b>    :
+                    <b>Notes</b>:
                     <ul>
                         <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
                         <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="x">x</i> is smoother than <i className="v">v</i> which is smoother than <i className="a">a</i>.</li>
                     </ul>
                 </div>}
                 {(mousePressed || !state.ys || !state.ys.length) ? null : <p align="center"><i>
-                    {`${Math.round(100 * (1 - Object.keys(rawYs).length / (this.state.n + 1)))}% of your graph's points were missing before interpolation/extrapolation    .  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
+                    {`${Math.round(100 * (1 - Object.keys(rawYs).length / (this.state.n + 1)))}% of your graph's points were missing before interpolation/extrapolation.  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
                 </i></p>}
                 <div className="bothSides">
                 <div className="sliders">
