@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+![Graphical Kinematics](kinematics.png)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This front-end project allows the user to create graphs for [simple kinematics](https://en.wikipedia.org/wiki/Kinematics), *ie* which involve the position *x*, velocity *v*, and acceleration *a* of a particle which moves in one dimension.
+The calculations are done with JavaScript, and the results are rendered with React class components that utilize state. The most basic user-control for this app is the value of the requisite "time-step" (Δ*t*), for which the following pair of considerations must always be balanced:
+* Too large will lead to choppy graphs.
+* Too small will lead to "noisy" derivatives.
 
-## Available Scripts
+The user creates a graph (of either *x*, *v*, or *a*) by click-and-dragging from left to right across the graphing area, where tall skinny rectangular divs create a horizontal array of targets for the mouse events, each of which involves the mouse entering a div. Vertical mouse-positions may be extracted from the offsetY property of e.nativeEvent.
+```
+handleEnter = e => {
+        e.preventDefault();
+        let { state, height } = this;
+        let { mousePressed } = state;
+        if (!mousePressed) return;
+        let id = Number(e.target.id);
+        let rawYs =  {...state.rawYs};
+        rawYs[id] = e.nativeEvent.offsetY - height / 2;
+        let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(rawYs, id);
+        this.setState({ rawYs, ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max });
+}
+```
+Rather than then calculating a numerical derivative (which is "noisy"), the app uses low-order [polynomial regression](https://en.wikipedia.org/wiki/Polynomial_regression) to fit the function in a small sliding window.  The requisite matrix inversion is done with the npm "matrix-inverse" package.
+```
+let vector = new Array(M).fill(0);
+    let matrix = [];
+    for (let i = 0; i < M; i++) {
+        matrix.push(new Array(M).fill(0));
+    }
+    for (const id2 of someIds) {
+        for (let i = 0; i < M; i++) {
+            vector[i] += rawYs[id2] * id2 ** i;
+            for (let j = 0; j < M; j++) {
+                matrix[i][j] += id2 ** (i + j);
+            }
+        }
+    }
+    const matrixInv = matrixInverse(matrix);
+    const vecSol = new Array(M).fill(0);
+    for (let i = 0; i < M; i++) {
+        for (let j = 0; j < M; j++) {
+            vecSol[i] += matrixInv[i][j] * vector[j];
+        }
+    }
+```
+The parameters of this polynomial then allow for the noiseless calculation of first- and second derivatives if needed, e.g., to calculate *v* and *a* from *x*.  Having these polynomic parameters available is also handy if/when the user's mouse misses one or more of the div targets, as happens quite frequently with the higher-resolution settings.  In this situation the user data can be interpolated or extrapolated, using the polynomic coefficients.
+(However the user is also informed about the gravity of their particular situation, in terms of how may divs get missed.)
 
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Each graph is rendered as a series of connected small slanted line segments, each of which connects two points which are separated horizontally by the timestep &Delta;*t* and which have slightly different *y*-values.  This line segment is the top border of a box whose properties are controlled by css inline-styling.
+```
+const Bar = ({ j, dt, y, y1, color }) => {
+    let t = j * dt;
+    let dy = y1 - y;
+    let r = Math.sqrt(dt * dt + dy * dy);
+    let angle = Math.atan2(dy, dt) * 180 / Math.PI;
+    return (
+        <div className="segment"
+        style={{
+            width:`${r}px`,
+            left: `${t - r / 2}px`,
+            top: `${y}px`,
+            transform: `rotate(${angle}deg) translateX(${r / 2}px)`,
+            borderColor: `${color}`
+        }}
+        >
+        </div>
+    )
+}
+```
+If the user chooses to draw a graph of *v* or *a*, then the determination of the other kinematic quantities requires the calculation of a first- or second-integral, each of which requires user-specification of initial conditions.  I chose to make this app qualitative (rather than quantitative), so I simply allow the user to specify whether the initial values are positive, negative, or zero.
+The "smoothing" functionality which is provided to the user involves setting the width of the sliding window that is used for the polynomic regressions: wider windows lead to smoother data.
