@@ -19,8 +19,8 @@ class ThreeGraphs extends React.Component {
         this.widthRough = 800;
         this.iiMax = 0.3;
         this.colors = ["blue", "green", "red"];
-        // Setting this.M = 4 means that position, velocity, and accelerations will be fit cubically,
-        // quadratically, and linearly, respectively.
+        // Setting this.M = 4 means that position, velocity, and accelerations will respectively
+        // be fit cubically, quadratically, and linearly.
         this.M = 4;
     }
 
@@ -28,36 +28,39 @@ class ThreeGraphs extends React.Component {
         let n = Math.round(10 ** this.state.logN);
         let N = Math.round(10 ** this.state.logSmooth) - 1;
         let ss = new Array(n + 1).fill(null);
-        let ys = {};
+        let rawYs = {};
         let dt = Math.round(this.widthRough / n);
         let width = n * dt;
-        this.setState({ n, N, dt, width, ss, ys });
+        this.setState({ n, N, dt, width, ss, rawYs });
     }
 
     handleLogN = e => {
         let logN = Number(e.target.value);
         let n = Math.round(10 ** logN);
-        // let dt = Math.round(this.state.width / n);
         let dt = this.state.width / n;
         let width = n * dt;
         let ss = new Array(n + 1).fill(null);
-        let [newYs, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
+        let [ys, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
         let [d1max, d2max, i1max, i2max] = new Array(4).fill(0);
-        this.setState({ logN, n, dt, width, ss, ys: {}, newYs, d1s, d2s, i1s, i2s, d1max, d2max, i1max, i2max });
+        this.setState({ logN, n, dt, width, ss, rawYs: {}, ys, d1s, d2s, i1s, i2s, d1max, d2max, i1max, i2max });
     }
 
     handleLogSmooth = e => {
         let logSmooth = Number(e.target.value);
         let N = this.setN(logSmooth);
         this.setState({ logSmooth, N },() => {
-            let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, this.state.n);
-            this.setState({ mousePressed: false, newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
+            let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.rawYs, this.state.n);
+            this.setState({ mousePressed: false, ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
         })
         // this.setState({ logN, n, dt, width, ss });
     }
 
-    handleInput = e => this.setState({[e.target.name]: Number(e.target.value)});
-    handleCheckbox = e => this.setState({[e.target.name]: e.target.checked});
+    handleInput = e => {
+        this.setState({[e.target.name]: Number(e.target.value)}, () => {
+            let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.rawYs, this.state.n);
+            this.setState({ ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
+        });
+    }
     toggle = _ => {
         let showInstructions = !this.state.showInstructions;
         this.setState({ showInstructions });
@@ -67,14 +70,12 @@ class ThreeGraphs extends React.Component {
         e.preventDefault();
         let logSmooth = 0;
         let N = this.setN(logSmooth)
-        this.setState({ mousePressed: true, ys: {}, logSmooth, N });
+        this.setState({ mousePressed: true, rawYs: {}, logSmooth, N });
     }
     handleUp   = e => {
         e.preventDefault();
-        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.ys, this.state.n);
-        this.setState({ mousePressed: false,
-            newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max
-        });
+        let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.rawYs, this.state.n);
+        this.setState({ mousePressed: false, ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
     };
 
     handleEnter = e => {
@@ -83,23 +84,22 @@ class ThreeGraphs extends React.Component {
         let { mousePressed } = state;
         if (!mousePressed) return;
         let id = Number(e.target.id);
-        let ys =  {...state.ys};
-        let y3 = e.nativeEvent.offsetY - height / 2;
-        ys[id] = y3;
-        let { newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(ys, id);
-        this.setState({ ys, newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max });
+        let rawYs =  {...state.rawYs};
+        rawYs[id] = e.nativeEvent.offsetY - height / 2;
+        let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(rawYs, id);
+        this.setState({ rawYs, ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max });
     }
 
-    fit = (ys, n) => {
+    fit = (rawYs, n) => {
         let { state, iiMax, height } = this;
         let { i1i, i2i, width, dt } = state;
         let M = this.M - this.state.xva;
         let N = this.state.N + M - 1;
         let id = 0;
-        let [newYs, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
+        let [ys, d1s, d2s, i1s, i2s] = [[], [], [], [], []];
         let [d1max, d2max, i1max, i2max] = [0, 0, 0, 0];
 
-        let ids = Object.keys(ys);
+        let ids = Object.keys(rawYs);
 
         let i1 = -i1i * iiMax * height * width / 2;
         let i2 = -i2i * iiMax * height * (width / 2) ** 2;
@@ -113,7 +113,7 @@ class ThreeGraphs extends React.Component {
             }
             for (const id2 of someIds) {
                 for (let i = 0; i < M; i++) {
-                    vector[i] += ys[id2] * id2 ** i;
+                    vector[i] += rawYs[id2] * id2 ** i;
                     for (let j = 0; j < M; j++) {
                         matrix[i][j] += id2 ** (i + j);
                     }
@@ -139,7 +139,7 @@ class ThreeGraphs extends React.Component {
                 }
                 i1 += y * dt;
                 i2 += i1* dt;
-                newYs[id] = y;
+                ys[id] = y;
                 d1s[id] = d1;
                 d2s[id] = d2;
                 d1max = Math.max(d1max, Math.abs(d1));
@@ -149,12 +149,12 @@ class ThreeGraphs extends React.Component {
                 id++;
             }
         }
-        return {newYs, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max};
+        return {ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max};
     }
 
     render() {
         let { state, handleDown, handleUp, handleEnter, handleLogN, handleInput, handleLogSmooth, height } = this;
-        let { ss, ys, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, xva, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
+        let { ss, rawYs, i1s, d1s, d2s, i2s, width, dt, i1i, i2i, logN, xva, i1max, i2max, d1max, d2max, mousePressed, logSmooth } = state;
         return  !ss ? null : (
             <>
                 <button onClick={this.toggle}>{this.state.showInstructions ? "HIDE" : "SHOW"}</button> instructions
@@ -167,28 +167,29 @@ class ThreeGraphs extends React.Component {
                     <ul>
                         <li>  The colors for the graphs of <i className="x">x</i>, <i className="v">v</i>, and <i className="a">a</i> will respectively be <span className="x">blue</span>, <span className="v">green</span>, and <span className="a">red.</span></li>
                         <li>Use the first slider to control the number of timesteps that will be used in the graphs.</li>
-                        <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: <span className="x"><i>x</i></span>, <span className="v"><i>v</i></span>, or <span className="a"><i>a</i></span>.</li>
+                        <li>Use the next slider to indicate what function (vs time <i>t</i>) you want to draw with your mouse: <span className="x"><i>x</i></span>, <span className="v"><i>v</i></span>, or <span className="a"><i>a</i></span>.  (The other two functions will be calculated and graphed.)</li>
                         <li>If needed, use the next one or two slider(s) to specify qualitative value(s) for the initial conditions (ie, of <i className="x">x</i> and/or <i className="v">v</i>).</li>
-                        <li> Click in the lefthand gray rectangle and drag slowly to the other rectangle in order to create a graph for your chosen quantity.  (The dotted line represents zero.)</li>
+                        <li> Click in the lefthand gray rectangle and drag slowly to the other rectangle in order to create a graph for your chosen quantity.  The dotted line represents zero.</li>
                         <li> After creating your graphs a final slider will materialize which you may use to "smooth" your graphs.</li>
 
                     </ul>
                     <b>Notes</b>    :
                     <ul>
                         <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
-                        <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="x">x</i> is smoother than <i className="v">v</i> which is smoother than <i className="a">a</i>. In this app you may smooth the graphs afterwards if you choose.</li>
+                        <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="x">x</i> is smoother than <i className="v">v</i> which is smoother than <i className="a">a</i>.</li>
                     </ul>
                 </div>}
-                {(mousePressed || !state.newYs) ? null : <p align="center"><i>
-                    {`${Math.round(100 * (1 - Object.keys(ys).length / (this.state.n + 1)))}% of your graph's points were missing.  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
+                {(mousePressed || !state.ys || !state.ys.length) ? null : <p align="center"><i>
+                    {`${Math.round(100 * (1 - Object.keys(rawYs).length / (this.state.n + 1)))}% of your graph's points were missing before interpolation/extrapolation    .  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
                 </i></p>}
                 <div className="bothSides">
                 <div className="sliders">
                         <div>
 
                         <table>
-                            <thead><tr><th colSpan="3">Controls</th></tr></thead>
+                            <thead><tr><th colSpan="3"><h3>Controls</h3></th></tr></thead>
                             <tbody>
+                                <tr className="spacer"></tr>
                                 <tr><td colSpan="3">Spatial resolution: </td></tr>
                                 <tr>
                                     <td align="right">coarse</td>
@@ -205,6 +206,7 @@ class ThreeGraphs extends React.Component {
                                     </td>
                                     <td>fine</td>
                                 </tr>
+                                <tr className="spacer"></tr>
                                 <tr><td colSpan="3">Quantity being drawn:</td></tr>
                                 <tr>
                                     <td align="right"><i className="x">x</i></td>
@@ -223,9 +225,10 @@ class ThreeGraphs extends React.Component {
                                 </tr>
                                 {(xva < 1) ? null :
                                     <>
+                                        <tr className="spacer"></tr>
                                         <tr>
                                             <td colSpan="3">
-                                                Initial value of {(xva === 2) ? "velocity" : "position"}:
+                                                Initial value of {(xva === 2) ? "velocity" : "position"} <i className={`${(xva === 2) ? "v" : "x"}`}>{(xva === 2) ? "v" : "x"}</i>:
                                             </td>
                                         </tr>
                                         <tr>
@@ -247,6 +250,7 @@ class ThreeGraphs extends React.Component {
                                 }
                                 {(xva < 2) ? null :
                                     <>
+                                        <tr className="spacer"></tr>
                                         <tr>
                                             <td colSpan="3">Initial value of position <i className="x">x</i>: </td>
                                         </tr>
@@ -267,8 +271,9 @@ class ThreeGraphs extends React.Component {
                                         </tr>
                                     </>
                                 }
-                                {(mousePressed || !state.newYs) ? null :
+                                {(mousePressed || !state.ys || !state.ys.length) ? null :
                                     <>
+                                        <tr className="spacer"></tr>
                                         <tr><td colSpan="3">Smoothing: </td></tr>
                                         <tr>
                                             <td align="right">none</td>
@@ -303,20 +308,20 @@ class ThreeGraphs extends React.Component {
                                     dt={dt}
                                     handleEnter={handleEnter}
                                 />
-                                {(ys[j] === undefined || ys[j + 1] === undefined || !mousePressed) ? null : <Bar
+                                {(rawYs[j] === undefined || rawYs[j + 1] === undefined || !mousePressed) ? null : <Bar
                                     key={`bar${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(ys[j] + height / 2)}
-                                    y1={Math.round(ys[j + 1] + height / 2 )}
+                                    y={Math.round(rawYs[j] + height / 2)}
+                                    y1={Math.round(rawYs[j + 1] + height / 2 )}
                                     color={this.colors[xva]}
                                 />}
-                                {(!state.newYs || state.newYs[j] === undefined || state.newYs[j + 1] === undefined || mousePressed) ? null : <Bar
+                                {(!state.ys || state.ys[j] === undefined || state.ys[j + 1] === undefined || mousePressed) ? null : <Bar
                                     key={`newBar${j}`}
                                     j={j}
                                     dt={dt}
-                                    y={Math.round(state.newYs[j] + height / 2)}
-                                    y1={Math.round(state.newYs[j + 1] + height / 2 )}
+                                    y={Math.round(state.ys[j] + height / 2)}
+                                    y1={Math.round(state.ys[j + 1] + height / 2 )}
                                     color={this.colors[xva]}
                                 />}
                                 {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || xva > 1 ? null : <Bar

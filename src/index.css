@@ -1,6 +1,4 @@
-* {
-  position: relative;
-}
+* {position: relative}
 
 .strips-container {
   display: flex;
@@ -78,6 +76,4 @@ div.strips-container input {
   justify-content: space-around;
 }
 
-tr {
-  padding-top: 20px;
-}
+tr.spacer {height: 40px}
