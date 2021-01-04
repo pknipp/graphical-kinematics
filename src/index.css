@@ -33,8 +33,7 @@
 }
 
 .segment {
-  box-sizing: border-box;
-  border-top: 1px solid;
+  border-top: 2px solid;
   position: absolute;
   height: 0px;
 }

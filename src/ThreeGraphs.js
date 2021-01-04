@@ -171,6 +171,7 @@ class ThreeGraphs extends React.Component {
                         <li> <em>Slope</em> equals <em>rise</em> divided by <em>run</em>, ie the steepness of a graph. An "uphill" graph has a positive slope, a "downhill" graph has a negative slope, and a horizontal line has zero slope.</li>
                         <li> The slope of the <i className="x">x</i>-graph (at a particular moment <i>t</i>) equals the value of <i className="v">v</i> at that moment.</li>
                         <li> The slope of the <i className="v">v</i>-graph equals the value of <i className="a">a</i> at that moment.</li>
+                        <li> The two previous bullets may be restated in calculus terms as follows: the velocity is the derivative of the position, and the acceleration is the derivative of the velocity (and is the <i>second</i> derivative of the position).</li>
                     </ul>
 
                     <b>Instructions:</b>
@@ -184,11 +185,11 @@ class ThreeGraphs extends React.Component {
                     </ul>
                     <b>Notes</b>:
                     <ul>
-                        <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  The percentage of missing points will be reported to you when you mouse-up.</li>
+                        <li>If your chosen resolution is too fine or if the mouse is dragged too quickly it will miss one or more stripes in the DOM, in which case the app fills in those points by interpolation or extrapolation.  If this is an issue, the percentage of missing points will be reported to you when you mouse-up.</li>
                         <li>The derivative of a function is rougher than the function itself, whereas the integral of a function is smoother.  Expressed differently, <i className="x">x</i> is smoother than <i className="v">v</i> which is smoother than <i className="a">a</i>.</li>
                     </ul>
                 </div>}
-                {(mousePressed || !state.ys || !state.ys.length) ? null : <p align="center"><i>
+                {(mousePressed || !state.ys || !state.ys.length || Object.keys(rawYs).length === this.state.n + 1) ? null : <p align="center"><i>
                     {`${Math.round(100 * (1 - Object.keys(rawYs).length / (this.state.n + 1)))}% of your graph's points were missing before interpolation/extrapolation.  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
                 </i></p>}
                 <div className="bothSides">
