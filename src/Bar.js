@@ -9,13 +9,13 @@ const Bar = ({ j, dt, y, y1, color }) => {
     let angle = Math.atan2(dy, dt) * 180 / Math.PI;
     return (
         <div className="segment"
-        style={{
-            width:`${r}px`,
-            left: `${t - r / 2}px`,
-            top: `${y}px`,
-            transform: `rotate(${angle}deg) translateX(${r / 2}px)`,
-            borderColor: `${color}`
-        }}
+            style={{
+                width:`${r}px`,
+                left: `${t - r / 2}px`,
+                top: `${y}px`,
+                transform: `rotate(${angle}deg) translateX(${r / 2}px)`,
+                borderColor: `${color}`
+            }}
         >
         </div>
     )

@@ -55,10 +55,6 @@ div.strips-container input {
   transform: rotate(-90deg);
 }
 
-/* .spacer {
-  width: 10px;
-} */
-
 .sliders {
   display: flex;
   justify-content: flex-start;
