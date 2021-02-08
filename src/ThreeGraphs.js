@@ -109,29 +109,26 @@ class ThreeGraphs extends React.Component {
 
         let i1 = -i1i * iiMax * height * width / 2;
         let i2 = -i2i * iiMax * height * (width / 2) ** 2;
-
+        // Start- & end-points of loop must allow inclusion of the smoothing window.
         for (let jId = N; jId < ids.length - N; jId++) {
             let someIds = ids.slice(jId - N, jId + N + 1);
             let vector = new Array(M).fill(0);
             let matrix = [];
-            for (let i = 0; i < M; i++) {
-                matrix.push(new Array(M).fill(0));
-            }
+            // Fill matrix and inhomogeneous vector whose solution vector'll be the fit parameters.
+            for (let i = 0; i < M; i++) matrix.push(new Array(M).fill(0));
             for (const id2 of someIds) {
                 for (let i = 0; i < M; i++) {
                     vector[i] += rawYs[id2] * id2 ** i;
-                    for (let j = 0; j < M; j++) {
-                        matrix[i][j] += id2 ** (i + j);
-                    }
+                    for (let j = 0; j < M; j++) matrix[i][j] += id2 ** (i + j);
                 }
             }
             const matrixInv = matrixInverse(matrix);
+            // Now that matrix has been inverted, use it to calculate solution vector.
             const vecSol = new Array(M).fill(0);
             for (let i = 0; i < M; i++) {
-                for (let j = 0; j < M; j++) {
-                    vecSol[i] += matrixInv[i][j] * vector[j];
-                }
+                for (let j = 0; j < M; j++) vecSol[i] += matrixInv[i][j] * vector[j];
             }
+            // Now that solution vector has been calculated, use it to calculate function & 1st & 2nd integrals and derivatives.
             while (id <= ids[jId] || (jId === ids.length - N - 1 && id <= n)) {
                 let y = 0;
                 let d1= 0;
@@ -148,6 +145,7 @@ class ThreeGraphs extends React.Component {
                 ys[id] = y;
                 d1s[id] = d1;
                 d2s[id] = d2;
+                // Calculate maxes of functions, for optimal plot-scaling purposes.
                 d1max = Math.max(d1max, Math.abs(d1));
                 d2max = Math.max(d2max, Math.abs(d2));
                 i1max = Math.max(i1max, Math.abs(i1));
@@ -223,7 +221,7 @@ class ThreeGraphs extends React.Component {
                                     <td>fine</td>
                                 </tr>
                                 <tr className="spacer"></tr>
-                                <tr><td colSpan="3">Quantity being drawn:</td></tr>
+                                <tr><td colSpan="3">Quantity being mouse-drawn:</td></tr>
                                 <tr>
                                     <td align="right"><i className="x">x</i></td>
                                     <td align="center">
