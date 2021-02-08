@@ -2,17 +2,20 @@ import React from "react";
 import matrixInverse from "matrix-inverse";
 import Strip from "./Strip";
 import Bar from "./Bar";
-// import IC from "./IC";
 class ThreeGraphs extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            // n (= 10 ** logN) equals the number of points on horizontal axis
             logN: 1.5,
             mousePressed: false,
+            // following two control whether initial values of 1st and 2nd integrals are positive, negative, or zero
             i1i: 0,
             i2i: 0,
+            // xva controls what graph user is drawing: position, velocity, or acceleration
             xva: 2,
             showInstructions: true,
+            // following controls the number of points included in the smoothing window
             logSmooth: 0,
         }
         this.height = 600;
@@ -25,9 +28,12 @@ class ThreeGraphs extends React.Component {
     }
 
     componentDidMount() {
+        // n = # of total points on axis, whereas N = # of points in smoothing window
         let n = Math.round(10 ** this.state.logN);
         let N = Math.round(10 ** this.state.logSmooth) - 1;
         let ss = new Array(n + 1).fill(null);
+        // following contains the raw data actually captured by mouseEvents.
+        // These will be interpolated, extrapolated, and smoothed.
         let rawYs = {};
         let dt = Math.round(this.widthRough / n);
         let width = n * dt;
@@ -52,7 +58,6 @@ class ThreeGraphs extends React.Component {
             let { ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max } = this.fit(this.state.rawYs, this.state.n);
             this.setState({ mousePressed: false, ys, d1s, d1max, d2s, d2max, i1s, i1max, i2s, i2max});
         })
-        // this.setState({ logN, n, dt, width, ss });
     }
 
     handleInput = e => {
@@ -82,6 +87,7 @@ class ThreeGraphs extends React.Component {
         e.preventDefault();
         let { state, height } = this;
         let { mousePressed } = state;
+        // Curve is drawn only if mouse is pressed.
         if (!mousePressed) return;
         let id = Number(e.target.id);
         let rawYs =  {...state.rawYs};
