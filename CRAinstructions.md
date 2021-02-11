@@ -1,4 +1,8 @@
-git push heroku master
+PAK's recipe (after creating a local repo):
+    first time:
+        at heroku: create app
+		from CLI: heroku git:remote -a APP-NAME
+    every time thereafter (from CLI): git push heroku master
 
 # Getting Started with Create React App
 
