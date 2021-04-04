@@ -197,184 +197,184 @@ class ThreeGraphs extends React.Component {
                     {`${Math.round(100 * (1 - Object.keys(rawYs).length / (this.state.n + 1)))}% of your graph's points were missing before interpolation/extrapolation.  To decrease this you should either drag your mouse more slowly or lower the spatial resolution.`}
                 </i></p>}
                 <div className="bothSides">
-                <div className="sliders">
-                        <div>
-
-                        <table>
-                            <thead><tr><th colSpan="3"><h3>Controls</h3></th></tr></thead>
-                            <tbody>
-                                <tr className="spacer"></tr>
-                                <tr><td colSpan="3">Spatial resolution: </td></tr>
-                                <tr>
-                                    <td align="right">coarse</td>
-                                    <td>
-                                        <input
-                                            type="range"
-                                            onChange={handleLogN}
-                                            name="logN"
-                                            min="0.5"
-                                            max="3"
-                                            step="0.25"
-                                            value={logN}
-                                        />
-                                    </td>
-                                    <td>fine</td>
-                                </tr>
-                                <tr className="spacer"></tr>
-                                <tr><td colSpan="3">Quantity being mouse-drawn:</td></tr>
-                                <tr>
-                                    <td align="right"><i className="x">x</i></td>
-                                    <td align="center">
-                                        <input
-                                            type="range"
-                                            onChange={handleInput}
-                                            name="xva"
-                                            min="0"
-                                            max="2"
-                                            step="1"
-                                            value={xva}
-                                        /><br/><i className="v">v</i>
-                                    </td>
-                                    <td><i className="a">a</i></td>
-                                </tr>
-                                {(xva < 1) ? null :
-                                    <>
-                                        <tr className="spacer"></tr>
-                                        <tr>
-                                            <td colSpan="3">
-                                                Initial value of {(xva === 2) ? "velocity" : "position"} <i className={`${(xva === 2) ? "v" : "x"}`}>{(xva === 2) ? "v" : "x"}</i>:
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right">negative</td>
-                                            <td align="center">
-                                                <input
-                                                    type="range"
-                                                    onChange={handleInput}
-                                                    name="i1i"
-                                                    min="-1"
-                                                    max="1"
-                                                    step="1"
-                                                    value={i1i}
-                                                /><br/>0
-                                            </td>
-                                            <td>positive</td>
-                                        </tr>
-                                    </>
-                                }
-                                {(xva < 2) ? null :
-                                    <>
-                                        <tr className="spacer"></tr>
-                                        <tr>
-                                            <td colSpan="3">Initial value of position <i className="x">x</i>: </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right">negative</td>
-                                            <td align="center">
-                                                <input
-                                                    type="range"
-                                                    onChange={handleInput}
-                                                    name="i2i"
-                                                    min="-1"
-                                                    max="1"
-                                                    step="1"
-                                                    value={i2i}
-                                                /><br/>0
-                                            </td>
-                                            <td>positive</td>
-                                        </tr>
-                                    </>
-                                }
-                                {(mousePressed || !state.ys || !state.ys.length) ? null :
-                                    <>
-                                        <tr className="spacer"></tr>
-                                        <tr><td colSpan="3">Smoothing: </td></tr>
-                                        <tr>
-                                            <td align="right">none</td>
-                                            <td>
-                                                <input
-                                                    type="range"
-                                                    onChange={handleLogSmooth}
-                                                    name="logSmooth"
-                                                    min="0"
-                                                    max={logN - 0.35}
-                                                    step="0.05"
-                                                    value={logSmooth}
-                                                />
-                                            </td>
-                                            <td>much</td>
-                                        </tr>
-                                    </>
-                                }
-                            </tbody>
-                        </table>
+                    <div className="sliders">
+                            <div>
+                            <table>
+                                <thead><tr><th colSpan="3"><h3>Controls</h3></th></tr></thead>
+                                <tbody>
+                                    <tr className="spacer"></tr>
+                                    <tr><td colSpan="3">Spatial resolution: </td></tr>
+                                    <tr>
+                                        <td align="right">coarse</td>
+                                        <td>
+                                            <input
+                                                type="range"
+                                                onChange={handleLogN}
+                                                name="logN"
+                                                min="0.5"
+                                                max="3"
+                                                step="0.25"
+                                                value={logN}
+                                            />
+                                        </td>
+                                        <td>fine</td>
+                                    </tr>
+                                    <tr className="spacer"></tr>
+                                    <tr><td colSpan="3">Quantity being mouse-drawn:</td></tr>
+                                    <tr>
+                                        <td align="right"><i className="x">x</i></td>
+                                        <td align="center">
+                                            <input
+                                                type="range"
+                                                onChange={handleInput}
+                                                name="xva"
+                                                min="0"
+                                                max="2"
+                                                step="1"
+                                                value={xva}
+                                            /><br/><i className="v">v</i>
+                                        </td>
+                                        <td><i className="a">a</i></td>
+                                    </tr>
+                                    {(xva < 1) ? null :
+                                        <>
+                                            <tr className="spacer"></tr>
+                                            <tr>
+                                                <td colSpan="3">
+                                                    Initial value of {(xva === 2) ? "velocity" : "position"} <i className={`${(xva === 2) ? "v" :   "x"}`}>{(xva === 2) ? "v" : "x"}</i>:
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right">negative</td>
+                                                <td align="center">
+                                                    <input
+                                                        type="range"
+                                                        onChange={handleInput}
+                                                        name="i1i"
+                                                        min="-1"
+                                                        max="1"
+                                                        step="1"
+                                                        value={i1i}
+                                                    /><br/>0
+                                                </td>
+                                                <td>positive</td>
+                                            </tr>
+                                        </>
+                                    }
+                                    {(xva < 2) ? null :
+                                        <>
+                                            <tr className="spacer"></tr>
+                                            <tr>
+                                                <td colSpan="3">Initial value of position <i className="x">x</i>: </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="right">negative</td>
+                                                <td align="center">
+                                                    <input
+                                                        type="range"
+                                                        onChange={handleInput}
+                                                        name="i2i"
+                                                        min="-1"
+                                                        max="1"
+                                                        step="1"
+                                                        value={i2i}
+                                                    /><br/>0
+                                                </td>
+                                                <td>positive</td>
+                                            </tr>
+                                        </>
+                                    }
+                                    {(mousePressed || !state.ys || !state.ys.length) ? null :
+                                        <>
+                                            <tr className="spacer"></tr>
+                                            <tr><td colSpan="3">Smoothing: </td></tr>
+                                            <tr>
+                                                <td align="right">none</td>
+                                                <td>
+                                                    <input
+                                                        type="range"
+                                                        onChange={handleLogSmooth}
+                                                        name="logSmooth"
+                                                        min="0"
+                                                        max={logN - 0.35}
+                                                        step="0.05"
+                                                        value={logSmooth}
+                                                    />
+                                                </td>
+                                                <td>much</td>
+                                            </tr>
+                                        </>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
+                        <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/   2)}px`}}></div>
+                        <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
+                            {ss.map((s, j) => (
+                                <>
+                                    <Strip
+                                        key={`strip${j}`}
+                                        j={j}
+                                        height={height}
+                                        dt={dt}
+                                        handleEnter={handleEnter}
+                                    />
+                                    {(rawYs[j] === undefined || rawYs[j + 1] === undefined ||   !mousePressed) ? null : <Bar
+                                        key={`bar${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(rawYs[j] + height / 2)}
+                                        y1={Math.round(rawYs[j + 1] + height / 2 )}
+                                        color={this.colors[xva]}
+                                    />}
+                                    {(!state.ys || state.ys[j] === undefined || state.ys[j + 1] ===     undefined || mousePressed) ? null : <Bar
+                                        key={`newBar${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(state.ys[j] + height / 2)}
+                                        y1={Math.round(state.ys[j + 1] + height / 2 )}
+                                        color={this.colors[xva]}
+                                    />}
+                                    {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) ||  xva > 1 ? null : <Bar
+                                        key={`d1${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(d1s[j] *  height / 2 / d1max + height / 2)}
+                                        y1={Math.round(d1s[j+1] *  height / 2 / d1max + height / 2)}
+                                        color={this.colors[(xva + 1) % 3]}
+                                    />}
+                                    {(!i1s || i1s[j] === undefined || i1s[j + 1] === undefined) ||  xva < 1 ? null : <Bar
+                                        key={`i1${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(i1s[j] *  height / 2 / i1max + height / 2)}
+                                        y1={Math.round(i1s[j+1] *  height / 2 / i1max + height / 2)}
+                                        color={this.colors[(xva + 2) % 3]}
+                                    />}
+                                    {(!d2s || d2s[j] === undefined || d2s[j + 1] === undefined) ||  xva > 0 ? null : <Bar
+                                        key={`d2${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(d2s[j] *  height / 2 / d2max + height / 2)}
+                                        y1={Math.round(d2s[j+1] *  height / 2 / d2max + height / 2)}
+                                        color={this.colors[(xva + 2) % 3]}
+                                    />}
+                                    {(!i2s || i2s[j] === undefined || i2s[j + 1] === undefined) ||  xva < 2 ? null : <Bar
+                                        key={`i2${j}`}
+                                        j={j}
+                                        dt={dt}
+                                        y={Math.round(i2s[j] *  height / 2 / i2max + height / 2)}
+                                        y1={Math.round(i2s[j+1] *  height / 2 / i2max + height / 2)}
+                                        color={this.colors[(xva + 1) % 3]}
+                                    />}
+                                </>
+                            ))}
+                        </div>
                     </div>
                 </div>
-                <div className="strips-container" onMouseDown={handleDown} onMouseUp={handleUp}>
-                    <div className="zero" style={{width: `${width}px`, top: `${Math.round(height/2)}px`}}></div>
-                    <div className="strips" style={{height:`${height}px`, width: `${width}px`}}>
-                        {ss.map((s, j) => (
-                            <>
-                                <Strip
-                                    key={`strip${j}`}
-                                    j={j}
-                                    height={height}
-                                    dt={dt}
-                                    handleEnter={handleEnter}
-                                />
-                                {(rawYs[j] === undefined || rawYs[j + 1] === undefined || !mousePressed) ? null : <Bar
-                                    key={`bar${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(rawYs[j] + height / 2)}
-                                    y1={Math.round(rawYs[j + 1] + height / 2 )}
-                                    color={this.colors[xva]}
-                                />}
-                                {(!state.ys || state.ys[j] === undefined || state.ys[j + 1] === undefined || mousePressed) ? null : <Bar
-                                    key={`newBar${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(state.ys[j] + height / 2)}
-                                    y1={Math.round(state.ys[j + 1] + height / 2 )}
-                                    color={this.colors[xva]}
-                                />}
-                                {(!d1s || d1s[j] === undefined || d1s[j + 1] === undefined) || xva > 1 ? null : <Bar
-                                    key={`d1${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d1s[j] *  height / 2 / d1max + height / 2)}
-                                    y1={Math.round(d1s[j+1] *  height / 2 / d1max + height / 2)}
-                                    color={this.colors[(xva + 1) % 3]}
-                                />}
-                                {(!i1s || i1s[j] === undefined || i1s[j + 1] === undefined) || xva < 1 ? null : <Bar
-                                    key={`i1${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(i1s[j] *  height / 2 / i1max + height / 2)}
-                                    y1={Math.round(i1s[j+1] *  height / 2 / i1max + height / 2)}
-                                    color={this.colors[(xva + 2) % 3]}
-                                />}
-                                {(!d2s || d2s[j] === undefined || d2s[j + 1] === undefined) || xva > 0 ? null : <Bar
-                                    key={`d2${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(d2s[j] *  height / 2 / d2max + height / 2)}
-                                    y1={Math.round(d2s[j+1] *  height / 2 / d2max + height / 2)}
-                                    color={this.colors[(xva + 2) % 3]}
-                                />}
-                                {(!i2s || i2s[j] === undefined || i2s[j + 1] === undefined) || xva < 2 ? null : <Bar
-                                    key={`i2${j}`}
-                                    j={j}
-                                    dt={dt}
-                                    y={Math.round(i2s[j] *  height / 2 / i2max + height / 2)}
-                                    y1={Math.round(i2s[j+1] *  height / 2 / i2max + height / 2)}
-                                    color={this.colors[(xva + 1) % 3]}
-                                />}
-                            </>
-                        ))}
-                    </div>
-                </div>
-                </div>
+                <br/>creator: <a href="https://pknipp.github.io/" target="_blank">Peter Knipp</a>
             </>
         )
     }
