@@ -1,6 +1,8 @@
-![Graphical Kinematics](kinematics.png)
+![Graphical Kinematics](public/kinematics.png)
 
-This front-end project allows the user to create graphs for [simple kinematics](https://en.wikipedia.org/wiki/Kinematics), *ie* which involve the position *x*, velocity *v*, and acceleration *a* of a particle which moves in one dimension.
+[Heroku deployment](https://graphical-kinematics.herokuapp.com)
+
+This front-end project allows the user to create graphs for [kinematics](https://en.wikipedia.org/wiki/Kinematics), *ie* which involve the position *x*, velocity *v*, and acceleration *a* of a particle which moves in one dimension.
 The calculations are done with JavaScript, and the results are rendered with React class components that utilize state. The most basic user-control for this app is the value of the requisite "time-step" (Δ*t*), for which the following pair of considerations must always be balanced:
 * Too large will lead to choppy graphs.
 * Too small will lead to "noisy" derivatives.
