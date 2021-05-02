@@ -374,7 +374,7 @@ class ThreeGraphs extends React.Component {
                         </div>
                     </div>
                 </div>
-                <br/>creator: <a href="https://pknipp.github.io/" target="_blank">Peter Knipp</a>
+                <br/>creator: <a href="https://pknipp.github.io/" target="_blank" rel="noreferrer">Peter Knipp</a>
             </>
         )
     }
