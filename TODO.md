@@ -1,5 +1,5 @@
 TO DO:
-* consolidate w/"quadratics factorizer" (because both are "educational")
+* consolidate w/"quadratics factorizer" (because both are "educational").
 * solve phantom-globe bug, if it ever reappears
 * control the drawn graph not with a mouse but with a vertical slider
 * consider having the first onMouseEnter event trigger the rendering (albeit temporary) of a horizontal line-segment, to provide reassurance to the user that the mouse is working properly
