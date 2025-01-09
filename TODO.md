@@ -1,3 +1,4 @@
+
 TO DO:
 * consolidate w/"quadratics factorizer" (because both are "educational").
 * solve phantom-globe bug, if it ever reappears
